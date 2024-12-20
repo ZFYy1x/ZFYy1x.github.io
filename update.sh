@@ -12,14 +12,14 @@ then
     # sed -i '' -e 's/.\/debfiles\//.\/iosre\/debfiles\//g' ./Packages;
     # perl -e 'print"HelloWorld\n"' # perl test
     bzip2 -c9k ./Packages > ./Packages.bz2;
-    printf "Origin: codwam's Repo\n\
-    Label: codwam\n\
+    printf "Origin: ZFYy1x's Repo\n\
+    Label: ZFYy1x\n\
     Suite: stable\n\
     Version: 1.0\n\
-    Codename: codwam\n\
+    Codename: ZFYy1x\n\
     Architecture: iphoneos-arm\n\
-    Components: main\n\
-    Description: codwam's Tweaks\n\
+    Components: master\n\
+    Description: ZFYy1x's Tweaks\n\
     MD5Sum:\n \
     "$(cat ./Packages | md5 | cut -d ' ' -f 1)" \
     "$(stat -f "%z" ./Packages)" Packages\n \
@@ -38,7 +38,7 @@ then
     #sed -i -e '/^SHA/d' ./Packages;
     # sed -i -e 's/.\/debfiles\//.\/iosre\/debfiles\//g' ./Packages
     bzip2 -c9k ./Packages > ./Packages.bz2;
-    printf "Origin: codwam's Repo\nLabel: codwam\nSuite: stable\nVersion: 1.0\nCodename: codwam\nArchitecture: iphoneos-arm\nComponents: main\nDescription: codwam's Tweaks\nMD5Sum:\n "$(cat ./Packages | md5sum | cut -d ' ' -f 1)" "$(stat ./Packages --printf="%s")" Packages\n "$(cat ./Packages.bz2 | md5sum | cut -d ' ' -f 1)" "$(stat ./Packages.bz2 --printf="%s")" Packages.bz2\n" >Release;
+    printf "Origin: ZFYy1x's Repo\nLabel: ZFYy1x\nSuite: stable\nVersion: 1.0\nCodename: ZFYy1x\nArchitecture: iphoneos-arm\nComponents: main\nDescription: ZFYy1x's Tweaks\nMD5Sum:\n "$(cat ./Packages | md5sum | cut -d ' ' -f 1)" "$(stat ./Packages --printf="%s")" Packages\n "$(cat ./Packages.bz2 | md5sum | cut -d ' ' -f 1)" "$(stat ./Packages.bz2 --printf="%s")" Packages.bz2\n" >Release;
     ls ./debfiles/ -t | grep '.deb' | perl -e 'use JSON; @in=grep(s/\n$//, <>); $count=0; foreach $fileNow (@in) { $fileNow = "./debfiles/$fileNow"; $size = -s $fileNow; $debInfo = `dpkg -f $fileNow`; $section = `echo "$debInfo" | grep "Section: " | cut -c 10- | tr -d "\n\r"`; $name= `echo "$debInfo" | grep "Name: " | cut -c 7- | tr -d "\n\r"`; $version= `echo "$debInfo" | grep "Version: " | cut -c 10- | tr -d "\n\r"`; $package= `echo "$debInfo" | grep "Package: " | cut -c 10- | tr -d "\n\r"`; $time= `date -r $fileNow +%s | tr -d "\n\r"`; @in[$count] = {section=>$section, package=>$package, version=>$version, size=>$size+0, time=>$time+0, name=>$name}; $count++; } print encode_json(\@in)."\n";' > all.packages;
 elif [ "$osName" == "MING" ] # MINGW, windows, git-bash
 then 

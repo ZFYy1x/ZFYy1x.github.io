@@ -1,11 +1,11 @@
-Origin: codwam's Repo
-Label: codwam
+Origin: ZFYy1x's Repo
+Label: ZFYy1x
 Suite: stable
 Version: 1.0
-Codename: codwam
+Codename: ZFYy1x
 Architecture: iphoneos-arm
-Components: main
-Description: codwam's Tweaks
+Components: master
+Description: ZFYy1x's Tweaks
 MD5Sum:
  db8c62c35ff4285467ffa67950297303 715 Packages
  32bfbdbc8d3a813b8bf41bd088674660 564 Packages.bz2

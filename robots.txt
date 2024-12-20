@@ -1,0 +1,5 @@
+User-agent: *
+Disallow:
+
+Sitemap: https://ZFYy1x.github.io/sitemap.xml
+

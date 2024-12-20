@@ -1,0 +1,523 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;dark&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/shinchan.png">
+  <link rel="icon" href="/img/shinchan.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="Ovie博客,Ovi3博客">
+  <meta name="author" content="Ovie">
+  <meta name="keywords" content="Ovie博客,Ovi3博客,个人博客,技术分享,网络安全,安全研发,安全研究,渗透测试">
+  <meta name="google-site-verification" content="eW4bY2KPHT_B6-DOYCuxmzwdjlQ34WXHQ4X3G__8cKY" />
+  
+  <title>基于mitmproxy实现web被动扫描代理 - Ovie博客</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.7.2/styles/vs2015.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"ovi3.github.io","root":"/","version":"1.8.11","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.2"><link rel="alternate" href="/atom.xml" title="Ovie博客" type="application/atom+xml">
+<link rel="alternate" href="/rss2.xml" title="Ovie博客" type="application/rss+xml">
+</head>
+
+
+<body>
+  <header style="height: 60vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Ovie</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/atom.xml">
+                <i class="iconfont icon-rss-fill"></i>
+                 
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('https://api.boxmoe.com/random.php?3') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="基于mitmproxy实现web被动扫描代理">
+              
+                基于mitmproxy实现web被动扫描代理
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2020-08-30 22:50" pubdate>
+        2020年8月30日 晚上
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      910 字
+    </span>
+  
+
+  
+
+  
+  
+    
+      <!-- 不蒜子统计文章PV -->
+      <span id="busuanzi_container_page_pv" style="display: none">
+        <i class="iconfont icon-eye" aria-hidden="true"></i>
+        <span id="busuanzi_value_page_pv"></span> 次
+      </span>
+    
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">基于mitmproxy实现web被动扫描代理</h1>
+            
+            <div class="markdown-body">
+              <p>mitmproxy模块提供的使用方式是使用命令行来开一个代理，这里用python代码调用mitmproxy的方法，开一个代理，获取请求信息，并添加到队列中，供后续扫描使用。</p>
+<p>本文使用的环境：</p>
+<figure class="highlight apache"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs apache"><span class="hljs-attribute">Python</span> <span class="hljs-number">3</span>.<span class="hljs-number">7</span>.<span class="hljs-number">0</span><br><span class="hljs-attribute">mitmproxy</span> <span class="hljs-number">5</span>.<span class="hljs-number">2</span><br></code></pre></div></td></tr></table></figure>
+
+
+
+<h4 id="安装"><a href="#安装" class="headerlink" title="安装"></a>安装</h4><p>安装：<code>pip install mitmproxy</code>。依赖多，国内安装慢，建议用国内镜像来安装：<code>pip install -i https://mirrors.aliyun.com/pypi/simple/ mitmproxy</code></p>
+<h4 id="启动代理"><a href="#启动代理" class="headerlink" title="启动代理"></a>启动代理</h4><p>可以直接用：</p>
+<figure class="highlight python"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs python"><span class="hljs-keyword">from</span> mitmproxy.tools.main <span class="hljs-keyword">import</span> mitmdump<br>mitmdump(args=<span class="hljs-string">&quot;--listen-port=6666 -m upstream:127.0.0.1:8080 --proxyauth=root:root&quot;</span>.split(<span class="hljs-string">&quot; &quot;</span>))<br></code></pre></div></td></tr></table></figure>
+
+<p>来启动代理，args参数跟调用<code>mitmdump</code>命令时传的参数一样。因为起初在网上搜，搜到的是另一段代码，所以没用这种简洁的方式，用的是：</p>
+<figure class="highlight python"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs python"><span class="hljs-comment">#!/usr/bin/python3</span><br><span class="hljs-comment"># -*-coding:utf-8-*-</span><br><br><span class="hljs-keyword">import</span> time<br><span class="hljs-keyword">import</span> queue<br><span class="hljs-keyword">from</span> multiprocessing <span class="hljs-keyword">import</span> Process, freeze_support, Queue<br><br><span class="hljs-keyword">from</span> mitmproxy <span class="hljs-keyword">import</span> proxy, options<br><span class="hljs-keyword">from</span> mitmproxy.http <span class="hljs-keyword">import</span> HTTPFlow<br><span class="hljs-keyword">from</span> mitmproxy.tools.dump <span class="hljs-keyword">import</span> DumpMaster<br><br><br><span class="hljs-keyword">class</span> <span class="hljs-title class_">Handler</span>:<br>    <span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">    将请求加入队列</span><br><span class="hljs-string">    &quot;&quot;&quot;</span><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, req_queue: Queue</span>):<br>        self.req_queue = req_queue<br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">request</span>(<span class="hljs-params">self, flow: HTTPFlow</span>):<br>        request_dict = &#123;<br>            <span class="hljs-string">&quot;method&quot;</span>: flow.request.method,<br>            <span class="hljs-string">&quot;url&quot;</span>: flow.request.url,<br>            <span class="hljs-string">&quot;headers&quot;</span>: [(key, flow.request.headers[key]) <span class="hljs-keyword">for</span> key <span class="hljs-keyword">in</span> flow.request.headers],<br>            <span class="hljs-string">&quot;cookies&quot;</span>: [(key, flow.request.cookies[key]) <span class="hljs-keyword">for</span> key <span class="hljs-keyword">in</span> flow.request.cookies],<br>            <span class="hljs-string">&quot;data&quot;</span>: flow.request.text<br>        &#125;<br>        <span class="hljs-keyword">try</span>:<br>            <span class="hljs-built_in">print</span>(request_dict.get(<span class="hljs-string">&quot;url&quot;</span>))<br>            self.req_queue.put(request_dict, timeout=<span class="hljs-number">2</span>)<br>        <span class="hljs-keyword">except</span> queue.Full:<br>            <span class="hljs-keyword">pass</span><br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">response</span>(<span class="hljs-params">self, flow: HTTPFlow</span>):<br>        <span class="hljs-keyword">pass</span><br><br>    <span class="hljs-keyword">def</span> <span class="hljs-title function_">responseheaders</span>(<span class="hljs-params">self, flow: HTTPFlow</span>):<br>       <span class="hljs-keyword">pass</span><br><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">do_start_proxy</span>(<span class="hljs-params">req_queue</span>):<br>    opts = options.Options(listen_host=<span class="hljs-string">&quot;127.0.0.1&quot;</span>, listen_port=<span class="hljs-number">6666</span>)<br><br>    m = DumpMaster(opts, with_termlog=<span class="hljs-literal">False</span>, with_dumper=<span class="hljs-literal">False</span>)<br><br>    pconf = proxy.config.ProxyConfig(opts)<br>    m.server = proxy.server.ProxyServer(pconf)<br>    m.addons.add(Handler(req_queue))<br><br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Proxy server listening at http://127.0.0.1:6666&quot;</span>)<br>    m.run()<br>    <span class="hljs-comment"># m.shutdown()</span><br><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">start_proxy</span>(<span class="hljs-params">req_queue</span>):<br>    freeze_support()<br>    p = Process(target=do_start_proxy, args=(req_queue, ))<br>    p.start()<br>    <span class="hljs-keyword">return</span> p<br><br><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:<br>    req_queue = Queue(<span class="hljs-number">6000</span>)<br>    p = start_proxy(req_queue)<br>    <span class="hljs-keyword">try</span>:<br>        <span class="hljs-keyword">while</span> <span class="hljs-literal">True</span>:<br>            <span class="hljs-comment"># 从req_queue获取请求，进行处理</span><br>            time.sleep(<span class="hljs-number">300</span>)<br>    <span class="hljs-keyword">except</span> KeyboardInterrupt:<br>        p.terminate()<br>        p.join()<br><br></code></pre></div></td></tr></table></figure>
+
+<p>下文将以这种方式来说明</p>
+<h4 id="插件编写"><a href="#插件编写" class="headerlink" title="插件编写"></a>插件编写</h4><p>上面使用子进程启动mitmproxy，然后通过<code>m.addons.add(Handler(req_queue))</code>注册插件，该插件将收到的请求信息添加到队列中，以便后续使用。</p>
+<p><code>Handler</code>类就是插件。其<code>request</code>方法在mitmproxy接到请求后调用，<code>response</code>方法在收到响应后调用，<code>responseheaders</code>方法在收到响应头部时就调用.（更多的回调方法参考<a target="_blank" rel="noopener" href="https://docs.mitmproxy.org/stable/addons-events/">这里</a>）。这些回调方法，通常接收一个flow参数，可以用来获取请求和响应信息，使用也简单，看<a target="_blank" rel="noopener" href="https://mitmproxy.readthedocs.io/en/v2.0.2/scripting/api.html">这里</a>就行。</p>
+<blockquote>
+<p> 注意： 不要在<code>request()</code>里用到<code>flow.response</code>，否则会卡住</p>
+</blockquote>
+<h4 id="HTTPS证书"><a href="#HTTPS证书" class="headerlink" title="HTTPS证书"></a>HTTPS证书</h4><p>mitmproxy已经处理好证书了。将浏览器代理指向mitmproxy，访问<code>mitm.it</code>，下载安装证书就行</p>
+<h4 id="option配置"><a href="#option配置" class="headerlink" title="option配置"></a>option配置</h4><p>上面那段代码中：</p>
+<figure class="highlight python"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs python">opts = options.Options(listen_host=<span class="hljs-string">&quot;127.0.0.1&quot;</span>, listen_port=<span class="hljs-number">6666</span>)<br><br>m = DumpMaster(opts, with_termlog=<span class="hljs-literal">False</span>, with_dumper=<span class="hljs-literal">False</span>)<br><br>pconf = proxy.config.ProxyConfig(opts)<br>m.server = proxy.server.ProxyServer(pconf)<br>m.addons.add(Handler(req_queue))<br></code></pre></div></td></tr></table></figure>
+
+<p><code>listen_host</code>配置代理监听地址，<code>listen_port</code>配置代理监听端口。<code>with_templog</code>为True时会输出客户端连接、断开信息，如：<code>127.0.0.1:53033: clientconnect  127.0.0.1:53034: clientconnect</code>；<code>with_dumper</code>为True时，输出连接信息：请求方法、URL、状态码等。所有可配置的option，看<a target="_blank" rel="noopener" href="https://docs.mitmproxy.org/stable/concepts-options/">这里</a>。</p>
+<p>举两个其它的配置：</p>
+<p>配置上流代理（mitmproxy的流量都传到这个proxy）：</p>
+<figure class="highlight python"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs python">opts.update(mode=<span class="hljs-string">&quot;upstream:127.0.0.1:1080&quot;</span>)  <span class="hljs-comment"># 所有接收到流量都传到127.0.0.1:1080这个代理去</span><br>opts.update(ssl_insecure=<span class="hljs-literal">True</span>)  <span class="hljs-comment"># 不验证上流代理给的https证书</span><br></code></pre></div></td></tr></table></figure>
+
+<p>配置代理的账号密码：</p>
+<figure class="highlight python"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs python">opts.update(proxyauth=<span class="hljs-string">&quot;root:root&quot;</span>)<br></code></pre></div></td></tr></table></figure>
+
+<p>这句代码要在初始化<code>DumpMaster</code>类后再调用。因为这个配置选项是由内置插件<code>ProxyAuth</code>提供的，该插件在初始化<code>DumpMaster</code>类时添加。</p>
+<h4 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h4><p>感觉直接调用<code>mitmdump</code>函数简单些。一开始用的是网上给的，没看源码，不知道有这种方式。</p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/Web%E5%AE%89%E5%85%A8/">Web安全</a>
+                    
+                      <a class="hover-with-bg" href="/tags/Python/">Python</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/12/04/sqli-labs-less-62/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">sqli-labs靶场Less-62题解（少于130次）</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2020/07/12/analyse-electron-app/">
+                        <span class="hidden-mobile">Electron应用安全测试方法</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments" lazyload>
+                
+                  
+                
+                
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'Ovi3/Ovi3.github.io');
+      s.setAttribute('issue-term', 'title');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+  <div class="statistics">
+    
+    
+
+    
+      
+        <!-- 不蒜子统计PV -->
+        <span id="busuanzi_container_site_pv" style="display: none">
+            总访问量 
+            <span id="busuanzi_value_site_pv"></span>
+             次
+          </span>
+      
+      
+        <!-- 不蒜子统计UV -->
+        <span id="busuanzi_container_site_uv" style="display: none">
+            总访客数 
+            <span id="busuanzi_value_site_uv"></span>
+             人
+          </span>
+      
+    
+  </div>
+
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js" ></script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+<script>
+
+function observeAndDisplay(sourceId, targetId) {
+  if (document.getElementById(sourceId)) {
+    new MutationObserver(m => {
+      m.forEach(m => {
+        if (m.target.textContent.trim() !== '') {
+          document.getElementById(targetId).style.display = 'inline';
+        }
+      });
+    })
+      .observe(
+        document.getElementById(sourceId),
+        { childList: true, characterData: true, subtree: true }
+      );
+  }
+
+}
+
+observeAndDisplay('busuanzi_value_page_pv', 'busuanzi_container_page_pv');
+observeAndDisplay('busuanzi_value_site_pv', 'busuanzi_container_site_pv');
+observeAndDisplay('busuanzi_value_site_uv', 'busuanzi_container_site_uv');
+
+
+</script>
+
+  <script defer src="https://cn.vercount.one/js?i=/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

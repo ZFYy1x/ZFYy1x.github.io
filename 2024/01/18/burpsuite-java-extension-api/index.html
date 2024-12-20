@@ -1,0 +1,631 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;dark&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/shinchan.png">
+  <link rel="icon" href="/img/shinchan.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="Ovie博客,Ovi3博客">
+  <meta name="author" content="Ovie">
+  <meta name="keywords" content="Ovie博客,Ovi3博客,个人博客,技术分享,网络安全,安全研发,安全研究,渗透测试">
+  <meta name="google-site-verification" content="eW4bY2KPHT_B6-DOYCuxmzwdjlQ34WXHQ4X3G__8cKY" />
+  
+  <title>Burpsuite Java插件开发 - API篇 - Ovie博客</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.7.2/styles/vs2015.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"ovi3.github.io","root":"/","version":"1.8.11","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.2"><link rel="alternate" href="/atom.xml" title="Ovie博客" type="application/atom+xml">
+<link rel="alternate" href="/rss2.xml" title="Ovie博客" type="application/rss+xml">
+</head>
+
+
+<body>
+  <header style="height: 60vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Ovie</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/atom.xml">
+                <i class="iconfont icon-rss-fill"></i>
+                 
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('https://api.boxmoe.com/random.php?3') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="Burpsuite Java插件开发 - API篇">
+              
+                Burpsuite Java插件开发 - API篇
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2024-01-18 00:06" pubdate>
+        2024年1月18日 凌晨
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      3.3k 字
+    </span>
+  
+
+  
+
+  
+  
+    
+      <!-- 不蒜子统计文章PV -->
+      <span id="busuanzi_container_page_pv" style="display: none">
+        <i class="iconfont icon-eye" aria-hidden="true"></i>
+        <span id="busuanzi_value_page_pv"></span> 次
+      </span>
+    
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Burpsuite Java插件开发 - API篇</h1>
+            
+            <div class="markdown-body">
+              <p>网上也有一些BP插件API相关的文章，本文主要就写BP插件API的一些细节，但不会覆盖到所有的API。下方是官方的API文档和示例代码链接。入门BP插件编写，主要就是看官方的几个示例代码，去编译运行，去用用，去查API文档，就差不多了。</p>
+<p>旧API：</p>
+<ul>
+<li>官方文档：<a target="_blank" rel="noopener" href="https://portswigger.net/burp/extender">https://portswigger.net/burp/extender</a></li>
+<li>API： <a target="_blank" rel="noopener" href="https://portswigger.net/burp/extender/api/index.html">https://portswigger.net/burp/extender/api/index.html</a></li>
+<li>代码示例：<a target="_blank" rel="noopener" href="https://github.com/PortSwigger?q=example-&amp;type=all&amp;language=&amp;sort=">https://github.com/PortSwigger?q=example-&amp;type=all&amp;language=&amp;sort=</a></li>
+</ul>
+<p>新API：</p>
+<ul>
+<li>官方文档：<a target="_blank" rel="noopener" href="https://portswigger.net/burp/documentation/desktop/extensions/creating">https://portswigger.net/burp/documentation/desktop/extensions/creating</a></li>
+<li>API：<a target="_blank" rel="noopener" href="https://portswigger.github.io/burp-extensions-montoya-api/javadoc/index.html（2022年10月，官方出的新API）">https://portswigger.github.io/burp-extensions-montoya-api/javadoc/index.html（2022年10月，官方出的新API）</a></li>
+<li>代码示例：<a target="_blank" rel="noopener" href="https://github.com/PortSwigger/burp-extensions-montoya-api-examples">https://github.com/PortSwigger/burp-extensions-montoya-api-examples</a></li>
+</ul>
+<p>BP插件API都出新的了，不过这里还是说旧API，目前网上使用旧API的插件还是比较多的。</p>
+<p>文中的代码主要在 Burpsuite Pro v2023.4.5 版本下测试运行。</p>
+<h3 id="void-IBurpExtenderCallbacks-setExtensionName-java-lang-String-name"><a href="#void-IBurpExtenderCallbacks-setExtensionName-java-lang-String-name" class="headerlink" title="void IBurpExtenderCallbacks.setExtensionName(java.lang.String name)"></a>void IBurpExtenderCallbacks.setExtensionName(java.lang.String name)</h3><p>设置插件名。最好在插件入口一开始就设置。 因为插件名跟插件配置绑定，所以最好不要随意更改插件名。 插件名也被用于插件自己添加的TAB页的标题和右键 - Extensions 菜单显示。</p>
+<h3 id="void-IBurpExtenderCallbacks-customizeUiComponent-java-awt-Component-component"><a href="#void-IBurpExtenderCallbacks-customizeUiComponent-java-awt-Component-component" class="headerlink" title="void IBurpExtenderCallbacks.customizeUiComponent(java.awt.Component component)"></a>void IBurpExtenderCallbacks.customizeUiComponent(java.awt.Component component)</h3><p>将指定的UI组件调整为Burp的UI风格。 </p>
+<p>某些组件调用了这个方法会导致问题 ：</p>
+<ul>
+<li>鼠标不能拖动JTable表格的列头以更换顺序，即使表格调用了<code>table.getTableHeader().setReorderingAllowed(true)</code> 也不行</li>
+<li><code>JComboBox</code>下拉框不能编辑，即使设置了<code>Editable</code>为<code>true</code>。</li>
+</ul>
+<p>解决方式：</p>
+<ul>
+<li>先调用<code>customizeUiComponent</code>方法，再修改组件（比如将<code>JComboBox</code>组件的<code>Editable</code>为<code>true</code>）。</li>
+<li>不要调用<code>customizeUiComponent</code>方法，实际测试调不调用这个方法对界面外观没有什么影响。（所以这个方法是做了什么操作？没去细究）</li>
+</ul>
+<h3 id="void-IBurpExtenderCallbacks-addScanIssue-IScanIssue-issue"><a href="#void-IBurpExtenderCallbacks-addScanIssue-IScanIssue-issue" class="headerlink" title="void IBurpExtenderCallbacks.addScanIssue(IScanIssue issue)"></a>void IBurpExtenderCallbacks.addScanIssue(IScanIssue issue)</h3><p>将<code>Issue</code>添加到<code>Burpsuite</code>的<code>Dashboard</code>。</p>
+<p>需自己编写一个实现<code>IScanIssue</code>接口的类。无论该类的<code>getIssueType()</code>方法返回什么值，由<code>IScannerListener</code>监听拿到的<code>issue</code>对象的<code>issueType</code>固定是 <code>0x08000000</code>，表示是由插件添加的<code>issue</code>。<code>IssueType</code>列表见：<a target="_blank" rel="noopener" href="https://portswigger.net/kb/issues">https://portswigger.net/kb/issues</a> 或 打开 <code>bupsuite - Target - Issue definitions</code>查看。</p>
+<h2 id="byte-IExtensionHelpers-updateParameter-byte-request-IParameter-parameter"><a href="#byte-IExtensionHelpers-updateParameter-byte-request-IParameter-parameter" class="headerlink" title="byte[] IExtensionHelpers.updateParameter(byte[] request, IParameter parameter)"></a>byte[] IExtensionHelpers.updateParameter(byte[] request, IParameter parameter)</h2><p>更新HTTP请求中参数的值。如果更新了请求body，还会添加或更新Content-Length请求头。</p>
+<p>该方法不会自动对参数值编码。且仅支持<code>IParameter.PARAM_URL</code>, <code>IParameter.PARAM_BODY</code> 和 <code>IParameter.PARAM_COOKIE</code>类型的<code>IParameter</code>对象，传递其他类型的<code>IParameter</code>对象会抛异常。</p>
+<p>示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">package</span> burp;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">BurpExtender</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">IBurpExtender</span><br>&#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">registerExtenderCallbacks</span><span class="hljs-params">(IBurpExtenderCallbacks callbacks)</span><br>    &#123;<br>        callbacks.setExtensionName(<span class="hljs-string">&quot;Test Extension&quot;</span>);<br><br>        <span class="hljs-type">IExtensionHelpers</span> <span class="hljs-variable">helpers</span> <span class="hljs-operator">=</span> callbacks.getHelpers();<br>        <span class="hljs-type">IParameter</span> <span class="hljs-variable">a</span> <span class="hljs-operator">=</span> helpers.buildParameter(<span class="hljs-string">&quot;a&quot;</span>, <span class="hljs-string">&quot;1&amp;b=2&quot;</span>, IParameter.PARAM_BODY);<br>        <span class="hljs-type">byte</span>[] request = <span class="hljs-string">&quot;POST / HTTP/1.1\r\nHost: example.com\r\n\r\nc=3&quot;</span>.getBytes();<br>        <span class="hljs-type">byte</span>[] request2 = helpers.updateParameter(request, a);<br>        callbacks.printOutput(<span class="hljs-keyword">new</span> <span class="hljs-title class_">String</span>(request2));<br><br>    &#125;<br><br>&#125;<br><span class="hljs-comment">/*</span><br><span class="hljs-comment">输出：</span><br><span class="hljs-comment"></span><br><span class="hljs-comment">POST / HTTP/1.1</span><br><span class="hljs-comment">Host: example.com</span><br><span class="hljs-comment">Content-Length: 11</span><br><span class="hljs-comment"></span><br><span class="hljs-comment">c=3&amp;a=1&amp;b=2</span><br><span class="hljs-comment">*/</span><br></code></pre></div></td></tr></table></figure>
+
+<h2 id="void-IExtensionStateListener-extensionUnloaded"><a href="#void-IExtensionStateListener-extensionUnloaded" class="headerlink" title="void IExtensionStateListener.extensionUnloaded()"></a>void IExtensionStateListener.extensionUnloaded()</h2><p>该回调方法在卸载（unload）插件时被调用，关闭Burp时不会被调用。</p>
+<p>通常在这个回调方法里关闭插件里启动的后台线程和连接、文件资源等，不然线程还会继续运行，容易造成问题。</p>
+<h2 id="IRequestInfo"><a href="#IRequestInfo" class="headerlink" title="IRequestInfo"></a>IRequestInfo</h2><p>调用<code>IExtensionHelpers</code>对象的<code>IRequestInfo analyzeRequest(byte[] request)</code>方法解析请求数据，返回<code>IRequestInfo</code>对象，该对象包含一些请求信息，如请求头，参数列表等。<code>IRequestInfo</code>对象的几个方法的细节：</p>
+<ul>
+<li><p><code>java.util.List&lt;IParameter&gt; IRequestInfo.getParameters()</code>：返回请求包里的参数列表。burp支持解析的参数类型有URL query参数、Cookie、body里的urlencoded格式、json格式、xml格式或multipart格式的参数。对于multipart格式请求包的解析结果需要说明下，以下示例代码：</p>
+  <figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">package</span> burp;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">BurpExtender</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">IBurpExtender</span><br>&#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">registerExtenderCallbacks</span><span class="hljs-params">(IBurpExtenderCallbacks callbacks)</span><br>    &#123;<br>        callbacks.setExtensionName(<span class="hljs-string">&quot;Test Extension&quot;</span>);<br><br>        <span class="hljs-type">IExtensionHelpers</span> <span class="hljs-variable">helpers</span> <span class="hljs-operator">=</span> callbacks.getHelpers();<br>        <span class="hljs-type">byte</span>[] request = (<span class="hljs-string">&quot;POST / HTTP/1.1\r\n&quot;</span> +<br>                <span class="hljs-string">&quot;Host: example.org\r\n&quot;</span> +<br>                <span class="hljs-string">&quot;Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryxUcPkAgfQy8GyoF5\r\n&quot;</span> +<br>                <span class="hljs-string">&quot;Content-Length: 259\r\n&quot;</span> +<br>                <span class="hljs-string">&quot;\r\n&quot;</span> +<br>                <span class="hljs-string">&quot;------WebKitFormBoundaryxUcPkAgfQy8GyoF5\r\n&quot;</span> +<br>                <span class="hljs-string">&quot;Content-Disposition: form-data; name=\&quot;note\&quot;;\r\n&quot;</span> +<br>                <span class="hljs-string">&quot;\r\n&quot;</span> +<br>                <span class="hljs-string">&quot;test\r\n&quot;</span> +<br>                <span class="hljs-string">&quot;------WebKitFormBoundaryxUcPkAgfQy8GyoF5\r\n&quot;</span> +<br>                <span class="hljs-string">&quot;Content-Disposition: form-data; name=\&quot;file\&quot;; filename=\&quot;test.txt\&quot;\r\n&quot;</span> +<br>                <span class="hljs-string">&quot;\r\n&quot;</span> +<br>                <span class="hljs-string">&quot;content\r\n&quot;</span> +<br>                <span class="hljs-string">&quot;------WebKitFormBoundaryxUcPkAgfQy8GyoF5--\r\n&quot;</span>).getBytes();<br>        <span class="hljs-type">IRequestInfo</span> <span class="hljs-variable">requestInfo</span> <span class="hljs-operator">=</span> helpers.analyzeRequest(request);<br>        <span class="hljs-keyword">for</span>(IParameter parameter: requestInfo.getParameters()) &#123;<br>            callbacks.printOutput(String.valueOf(parameter.getType()));<br>            callbacks.printOutput(parameter.getName());<br>            callbacks.printOutput(parameter.getValue());<br>            callbacks.printOutput(<span class="hljs-string">&quot;---------------------&quot;</span>);<br>        &#125;<br><br>    &#125;<br><br>&#125;<br></code></pre></div></td></tr></table></figure>
+
+<p>  输出：</p>
+  <figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs java"><span class="hljs-number">1</span>  <span class="hljs-comment">// 即 IParameter.PARAM_BODY</span><br>note<br>test<br>---------------------<br><span class="hljs-number">5</span>  <span class="hljs-comment">// 即 IParameter.PARAM_MULTIPART_ATTR</span><br>filename<br>test.txt<br>---------------------<br><span class="hljs-number">1</span>  <span class="hljs-comment">// 即 IParameter.PARAM_BODY</span><br>file<br>content<br>---------------------<br></code></pre></div></td></tr></table></figure>
+
+<p>  <code>IParameter.PARAM_MULTIPART_ATTR</code>类型的参数，指multipart属性，即这里的<code>filename=&quot;test.txt&quot;</code>部分，而body里的其他参数归于<code>IParameter.PARAM_BODY</code>这类。body里的urlencoded格式参数也是<code>IParameter.PARAM_BODY</code>。</p>
+<p>  另外对于xml这种<code>&lt;empty/&gt;</code>空元素不解析，但解析<code>&lt;empty&gt;&lt;/empty&gt;</code>这种，类型为<code>IParameter.PARAM_XML</code>。</p>
+</li>
+<li><p><code>java.util.List&lt;java.lang.String&gt; IRequestInfo.getHeaders()</code>：获取请求头列表，包含请求体第一行（如：<code>GET / HTTP/1.1</code>）</p>
+</li>
+<li><p><code>byte IRequestInfo.getContentType()</code>： 返回body的Content Type。其不是根据<code>Content-Type</code>请求头判断，而是根据body内容来判断：</p>
+  <figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">package</span> burp;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">BurpExtender</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">IBurpExtender</span><br>&#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">registerExtenderCallbacks</span><span class="hljs-params">(IBurpExtenderCallbacks callbacks)</span><br>    &#123;<br>        callbacks.setExtensionName(<span class="hljs-string">&quot;Test Extension&quot;</span>);<br><br>        <span class="hljs-type">IExtensionHelpers</span> <span class="hljs-variable">helpers</span> <span class="hljs-operator">=</span> callbacks.getHelpers();<br>        <span class="hljs-type">byte</span>[] request = <span class="hljs-string">&quot;POST / HTTP/1.1\r\nHost: test.com\r\nContent-Type: application/json\r\n\r\n&lt;user&gt;admin&lt;/user&gt;&quot;</span>.getBytes();<br>        <span class="hljs-type">IRequestInfo</span> <span class="hljs-variable">requestInfo</span> <span class="hljs-operator">=</span> helpers.analyzeRequest(request);<br>        callbacks.printOutput(<span class="hljs-string">&quot;ct: &quot;</span> + requestInfo.getContentType());<br>    &#125;<br><br>&#125;<br><span class="hljs-comment">/*</span><br><span class="hljs-comment">输出：</span><br><span class="hljs-comment">3          // 即 IRequestInfo.CONTENT_TYPE_XML</span><br><span class="hljs-comment">*/</span><br></code></pre></div></td></tr></table></figure>
+
+
+</li>
+</ul>
+<h2 id="IResponseInfo"><a href="#IResponseInfo" class="headerlink" title="IResponseInfo"></a>IResponseInfo</h2><p>调用<code>IExtensionHelpers</code>对象的<code>IResponseInfo analyzeResponse(byte[] response)</code>方法解析请求数据，返回<code>IResponseInfo</code>对象，该对象包含一些响应信息，如状态码，响应头，MIME类型等。</p>
+<p><code>IResponseInfo</code>对象获取MIME类型有两个方法：</p>
+<ul>
+<li><code>java.lang.String IResponseInfo.getStatedMimeType()</code>：根据<code>Content-Type</code>响应头返回MIME类型</li>
+<li><code>java.lang.String IResponseInfo.getInferredMimeType()</code>：根据body内容判断MIME类型。 （在Burp的<code>Proxy</code>面板的MIME列就是根据body内容判断的）</li>
+</ul>
+<p>返回值可能是<code>HTML</code>、<code>GIF</code>、<code>SVG</code>、<code>image</code>、<code>PNG</code>、<code>JPEG</code>、<code>CSS</code>、<code>JSON</code>、<code>XML</code>、<code>script</code>、<code>video</code> 或空字符串等。</p>
+<h2 id="IParameter"><a href="#IParameter" class="headerlink" title="IParameter"></a>IParameter</h2><p>上面提到通过解析请求数据，获取请求参数列表，即<code>IParameter</code>对象列表。通过<code>IParameter</code>对象的<code>getValue()</code>方法可以获取到参数值，需要注意的是，获取到的值为未解码过的。示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">package</span> burp;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">BurpExtender</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">IBurpExtender</span><br>&#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">registerExtenderCallbacks</span><span class="hljs-params">(IBurpExtenderCallbacks callbacks)</span><br>    &#123;<br>        callbacks.setExtensionName(<span class="hljs-string">&quot;Test Extension&quot;</span>);<br><br>        <span class="hljs-type">IExtensionHelpers</span> <span class="hljs-variable">helpers</span> <span class="hljs-operator">=</span> callbacks.getHelpers();<br>        <span class="hljs-type">byte</span>[] request = <span class="hljs-string">&quot;POST /redirect?url=http:%2f%2f HTTP/1.1\r\nHost: test.com\r\nContent-Type: application/json\r\n\r\n&#123;\&quot;username\&quot;:\&quot;admin\&quot;,\&quot;remember\&quot;:1&#125;&quot;</span>.getBytes();<br>        <span class="hljs-type">IRequestInfo</span> <span class="hljs-variable">requestInfo</span> <span class="hljs-operator">=</span> helpers.analyzeRequest(request);<br>        <span class="hljs-keyword">for</span>(IParameter parameter: requestInfo.getParameters()) &#123;<br>            callbacks.printOutput(String.valueOf(parameter.getType()));<br>            callbacks.printOutput(parameter.getName());<br>            callbacks.printOutput(parameter.getValue());<br>            callbacks.printOutput(<span class="hljs-string">&quot;---------------------&quot;</span>);<br>        &#125;<br>    &#125;<br><br>&#125;<br></code></pre></div></td></tr></table></figure>
+
+<p>输出：</p>
+<figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs java"><span class="hljs-number">0</span><br>url<br>http:%<span class="hljs-number">2f</span>%<span class="hljs-number">2f</span><br>---------------------<br><span class="hljs-number">6</span><br>username<br>admin<br>---------------------<br><span class="hljs-number">6</span><br>remember<br><span class="hljs-number">1</span><br>---------------------<br></code></pre></div></td></tr></table></figure>
+
+<p>上方的query参数<code>/?url=http:%2f%2f</code>，拿到的值是<code>http:%2f%2f</code>，burp没有对其进行解码，在数据包里什么样就是什么样。</p>
+<p>对于JSON参数 <code>&#123;&quot;usernmae&quot;: &quot;admin&quot;, &quot;rememberme&quot;: 1&#125;</code>的<code>&quot;admin&quot;</code>和<code>1</code>参数值，<code>getValue()</code>返回值分别是<code>admin</code>和<code>1</code>，并不能从值去判断该JSON参数是字符串还是数字，可以使用<code>request[parameter.getValueStart()-1] == &#39;&quot;&#39;</code> 来判断。</p>
+<h2 id="IScannerCheck"><a href="#IScannerCheck" class="headerlink" title="IScannerCheck"></a>IScannerCheck</h2><p>通过 <code>IBurpExtenderCallbacks</code>对象的<code>registerScannerCheck(IScannerCheck check)</code> 方法注册一个<code>IScannerCheck</code>对象来向burp添加自己的扫描检测。</p>
+<p><code>IScannerCheck</code>接口的几个方法：</p>
+<ul>
+<li><code>int consolidateDuplicateIssues(IScanIssue existingIssue, IScanIssue newIssue)</code>：当同一个URL路径报了多个issue，该方法就会被调用。若返回<code>-1</code>则只报告<code>existingIssue</code>，若返回<code>0</code>则报告这两个<code>issue</code>，若返回1则报告<code>newIssue</code>。通常返回<code>0</code>。</li>
+<li><code>java.util.List&lt;IScanIssue&gt; doActiveScan(IHttpRequestResponse baseRequestResponse, IScannerInsertionPoint insertionPoint)</code>：主动扫描时被调用，需要时可在此方法里发包。 返回值为issue列表，其会被加到Burp的Dashboard的<code>Issue Activity</code>面板里。（也可以直接返回空列表，然后通过调用 <code>IBurpExtenderCallbacks.addScanIssue(IScanIssue issue)</code> 方法添加<code>issue</code>）</li>
+<li><code>java.util.List&lt;IScanIssue&gt; doPassiveScan(IHttpRequestResponse baseRequestResponse)</code>：被动检测时被调用，返回值为issue列表，其会被加到Burp的Dashboard的<code>Issue Activity</code>面板里。</li>
+</ul>
+<p>调用burp主动扫描的一种方式是在请求项上<code>右键 - Do Active Scan</code>。对于被动检测，burp默认会在<code>Dashboard</code> 的<code>Task</code>面板中建立一个<code>Audit checks - passive</code>的任务，该任务就是对<code>Proxy</code>流量进行被动检测，或者自己在请求项上<code>右键 - Do passive scan</code>。</p>
+<p>Github上很多burp被动扫描插件会在<code>IScannerCheck</code>的 <code>doPassiveScan</code>这个回调方法上发包检测漏洞，但官方建议是在这个回调方法里不发包，仅做数据包检测（如匹配敏感信息等），所以被动扫描器跟<code>burp</code>的<code>doPassiveScan</code>被动检测的”被动“不是一个意思。</p>
+<p>假如一个FastJson被动扫描插件在<code>doPassiveScan</code>这个回调方法里做检测，且该插件有一个是否开启FastJson扫描的配置，就会出现这样的bug：</p>
+<ol>
+<li>用户将浏览器流量代理到burp，且FastJson被动扫描插件为关闭状态。</li>
+<li>用户访问 <code>https://example.com/api</code>，burp会调用<code>doPassiveScan</code>回调方法，但FastJson被动扫描插件为关闭状态，插件直接不检测。</li>
+<li>用户开启FastJson被动扫描插件，再访问<code>https://example.com/api</code>，burp不会再调用<code>doPassiveScan</code>回调方法了，导致即使开启了FastJson被动扫描插件也不会对<code>https://example.com/api</code>扫描。</li>
+</ol>
+<p>原因在于，burp对于拥有相同的URL路径和参数键名的不同请求只会调用一次<code>doPassiveScan</code>。这个行为可以在 <code>Dashboard - Task - &quot;Audit check - passive&quot; - Depulication</code>配置里进行关闭。</p>
+<p>所以如果想要实现一个burp被动扫描插件，应该监听Proxy流量，然后自行判断该请求是否扫描过，避免重复扫描。</p>
+<h2 id="makeHttpRequest"><a href="#makeHttpRequest" class="headerlink" title="makeHttpRequest"></a>makeHttpRequest</h2><p>调用<code>IBurpExtenderCallbacks</code>的<code>makeHttpRequest</code>方法来发送http请求，有几个问题：</p>
+<ul>
+<li><p>该方法为同步发送请求，没有提供异步发送的方式。</p>
+</li>
+<li><p>该方法不跟踪跳转。（测试发现，跟burp的<code>Settings - Network - HTTP - Allowed redirect type</code>这个配置无关）</p>
+</li>
+<li><p>有个默认的超时时间（120秒），可在burp的<code>Settings - Network - Connections - Timeouts</code>里配置。大部分用户不会去配置，导致用<code>burp api</code>发大量请求时会比较慢。 <code>makeHttpRequest</code>方法没有设置超时时间的参数。</p>
+</li>
+<li><p>发生连接不上、超时等错误时也不会抛异常。只能通过返回值判断下是否发生错误：</p>
+<ul>
+<li><p><code>IHttpRequestResponse makeHttpRequest(IHttpService httpService, byte[] request)</code>：返回值<code>IHttpRequestResponse</code>对象的<code>getResponse()</code>方法返回 <code>null</code>或者长度为0的byte数组。</p>
+</li>
+<li><p><code>byte[] makeHttpRequest(java.lang.String host, int port, boolean useHttps, byte[] request)</code> ：返回值为 <code>null</code>或者长度为0的byte数组。</p>
+<p>具体的错误信息只在 Burp 的 <code>Dashboard - Event Log</code>里可以看到。</p>
+</li>
+</ul>
+</li>
+</ul>
+<p>如果不使用burp提供的API，而是用第三方库（如okhttp3）发送请求，需要注意：</p>
+<ul>
+<li>发送的请求不会被记录到<code>Logger</code>面板里。</li>
+<li>burp里的配置不会影响到第三方库，如代理设置。</li>
+</ul>
+<h2 id="urlEncode-和-urlDecode"><a href="#urlEncode-和-urlDecode" class="headerlink" title="urlEncode 和 urlDecode"></a>urlEncode 和 urlDecode</h2><p><code>IExtensionHelpers</code>对象提供的URL编码和URL解码函数：</p>
+<ul>
+<li><code>byte[] urlDecode(byte[] data)</code></li>
+<li><code>java.lang.String urlDecode(java.lang.String data)</code></li>
+<li><code>byte[] urlEncode(byte[] data)</code>：不对<code>&#39;&lt;&gt;/\&quot;</code>等编码，对<code>?#@:</code>等编码，将空格转为<code>+</code>号而不是<code>%20</code>。</li>
+<li><code>java.lang.String urlEncode(java.lang.String data)</code>：同上</li>
+</ul>
+<p>这几个函数并不处理编码方式。下方示例会打印乱码与错误结果：</p>
+<figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">package</span> burp;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">BurpExtender</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">IBurpExtender</span><br>&#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">registerExtenderCallbacks</span><span class="hljs-params">(IBurpExtenderCallbacks callbacks)</span><br>    &#123;<br>        <span class="hljs-type">IExtensionHelpers</span> <span class="hljs-variable">helpers</span> <span class="hljs-operator">=</span> callbacks.getHelpers();<br>        callbacks.printOutput(helpers.urlDecode(<span class="hljs-string">&quot;%e4%b8%ad%e6%96%87&quot;</span>)); <span class="hljs-comment">// 打印乱码。</span><br>        callbacks.printOutput(helpers.urlEncode(<span class="hljs-string">&quot;测测&quot;</span>));  <span class="hljs-comment">// 打印错误结果 &quot;KK&quot;</span><br>    &#125;<br>&#125;<br></code></pre></div></td></tr></table></figure>
+
+<p>如果要URL解码支持中文，需调用URL解码为byte数组，再指定编码方式将byte数组转为字符串。示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">package</span> burp;<br><br><span class="hljs-keyword">import</span> java.nio.charset.StandardCharsets;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">BurpExtender</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">IBurpExtender</span><br>&#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">registerExtenderCallbacks</span><span class="hljs-params">(IBurpExtenderCallbacks callbacks)</span><br>    &#123;<br>        <span class="hljs-type">IExtensionHelpers</span> <span class="hljs-variable">helpers</span> <span class="hljs-operator">=</span> callbacks.getHelpers();<br><br>        <span class="hljs-type">byte</span>[] utf8Bytes = helpers.urlDecode(<span class="hljs-string">&quot;%e4%b8%ad%e6%96%87&quot;</span>.getBytes());<br>        <span class="hljs-type">String</span> <span class="hljs-variable">utf8String</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">String</span>(utf8Bytes, StandardCharsets.UTF_8);<br>        callbacks.printOutput(utf8String);  <span class="hljs-comment">// 输出 &quot;中文&quot;</span><br>    &#125;<br>&#125;<br></code></pre></div></td></tr></table></figure>
+
+<p>如果要对中文进行URL编码：</p>
+<figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">package</span> burp;<br><br><span class="hljs-keyword">import</span> java.nio.charset.StandardCharsets;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">BurpExtender</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">IBurpExtender</span><br>&#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">registerExtenderCallbacks</span><span class="hljs-params">(IBurpExtenderCallbacks callbacks)</span><br>    &#123;<br>        <span class="hljs-type">IExtensionHelpers</span> <span class="hljs-variable">helpers</span> <span class="hljs-operator">=</span> callbacks.getHelpers();<br>        callbacks.printOutput(<span class="hljs-keyword">new</span> <span class="hljs-title class_">String</span>(helpers.urlEncode(<span class="hljs-string">&quot;中+文&quot;</span>.getBytes(StandardCharsets.UTF_8))));<br>    &#125;<br>&#125;<br></code></pre></div></td></tr></table></figure>
+
+<p>上方示例并没有输出期望的结果 <code>&quot;%e4%b8%ad%2b%e6%96%87&quot;</code>，而是输出 <code>&quot;中%2b文&quot;</code>。这是因为burp的<code>urlEncode</code>方法不对不可见字节（如空字节、0xe4）进行url编码。所以想要期望的效果，需要自己实现URL编码方法了。</p>
+<h2 id="bytesToString-和-stringToBytes"><a href="#bytesToString-和-stringToBytes" class="headerlink" title="bytesToString 和 stringToBytes"></a>bytesToString 和 stringToBytes</h2><p><code>IExtensionHelpers</code>对象提供的在字节数组与字符串之间转换的方法：</p>
+<ul>
+<li><p><code>java.lang.String bytesToString(byte[] data)</code></p>
+</li>
+<li><p><code>byte[] stringToBytes(java.lang.String data)</code></p>
+<p>这两个方法也是不考虑编码方式，直接将字符串中的各个char字符和byte之间转换。示例：</p>
+</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">package</span> burp;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">BurpExtender</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">IBurpExtender</span><br>&#123;<br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">registerExtenderCallbacks</span><span class="hljs-params">(IBurpExtenderCallbacks callbacks)</span><br>    &#123;<br>        <span class="hljs-type">IExtensionHelpers</span> <span class="hljs-variable">helpers</span> <span class="hljs-operator">=</span> callbacks.getHelpers();<br><br>        callbacks.printOutput(helpers.bytesToString(<span class="hljs-keyword">new</span> <span class="hljs-title class_">byte</span>[]&#123;(<span class="hljs-type">byte</span>) <span class="hljs-number">0xe6</span>, (<span class="hljs-type">byte</span>) <span class="hljs-number">0x90</span>, (<span class="hljs-type">byte</span>) <span class="hljs-number">0x9c</span>&#125;)); <span class="hljs-comment">// 输出 乱码</span><br>        callbacks.printOutput(hexEncode(helpers.bytesToString(<span class="hljs-keyword">new</span> <span class="hljs-title class_">byte</span>[]&#123;(<span class="hljs-type">byte</span>) <span class="hljs-number">0xe6</span>, (<span class="hljs-type">byte</span>) <span class="hljs-number">0x90</span>, (<span class="hljs-type">byte</span>) <span class="hljs-number">0x9c</span>&#125;))); <span class="hljs-comment">// 输出 e6909c</span><br><br>        callbacks.printOutput(hexEncode(<span class="hljs-string">&quot;中&quot;</span>)); <span class="hljs-comment">// 输出 4e2d （&quot;中&quot; 的Unicode码为U+4e2d，因为Java里的字符串按Unicode编码方式存储）</span><br>        callbacks.printOutput(hexEncode(helpers.stringToBytes(<span class="hljs-string">&quot;中文&quot;</span>))); <span class="hljs-comment">// 输出 2d87 （ 这个结果怎么来的： &quot;中&quot;的Unicode码为 U+4e2d， &quot;文&quot;的Unicode码为 U+6587，各取一个字节，拼接为 2d87）</span><br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String <span class="hljs-title function_">hexEncode</span><span class="hljs-params">(String data)</span> &#123;<br>        <span class="hljs-type">StringBuilder</span> <span class="hljs-variable">hexContent</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">StringBuilder</span>();<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">char</span> b : data.toCharArray()) &#123;<br>            hexContent.append(String.format(<span class="hljs-string">&quot;%02x&quot;</span>, (<span class="hljs-type">int</span>) b));<br>        &#125;<br><br>        <span class="hljs-keyword">return</span> hexContent.toString();<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> String <span class="hljs-title function_">hexEncode</span><span class="hljs-params">(<span class="hljs-type">byte</span>[] data)</span> &#123;<br>        <span class="hljs-type">StringBuilder</span> <span class="hljs-variable">hexContent</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">StringBuilder</span>();<br>        <span class="hljs-keyword">for</span> (<span class="hljs-type">byte</span> b : data) &#123;<br>            hexContent.append(String.format(<span class="hljs-string">&quot;%02x&quot;</span>, b));<br>        &#125;<br><br>        <span class="hljs-keyword">return</span> hexContent.toString();<br>    &#125;<br>&#125;<br></code></pre></div></td></tr></table></figure>
+
+<p>如果考虑中文字符的编码，就不要用这两个方法，使用：</p>
+<figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs java"><span class="hljs-comment">// byte数组转字符串</span><br><span class="hljs-keyword">new</span> <span class="hljs-title class_">String</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">byte</span>[]&#123;(<span class="hljs-type">byte</span>) <span class="hljs-number">0xe4</span>, (<span class="hljs-type">byte</span>) <span class="hljs-number">0xb8</span>, (<span class="hljs-type">byte</span>) <span class="hljs-number">0xad</span>&#125;, StandardCharsets.UTF_8);<br><br><span class="hljs-comment">// 字符串转byte数组</span><br><span class="hljs-string">&quot;中文&quot;</span>.getBytes(StandardCharsets.UTF_8);<br></code></pre></div></td></tr></table></figure>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/Burpsuite/">Burpsuite</a>
+                    
+                      <a class="hover-with-bg" href="/tags/Web%E5%AE%89%E5%85%A8/">Web安全</a>
+                    
+                      <a class="hover-with-bg" href="/tags/Java/">Java</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/01/18/burpsuite-java-extension-ui/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Burpsuite Java插件开发 - UI篇</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/01/18/burpsuite-java-extension-code-env/">
+                        <span class="hidden-mobile">Burpsuite Java插件开发 - 基础篇</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments" lazyload>
+                
+                  
+                
+                
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'Ovi3/Ovi3.github.io');
+      s.setAttribute('issue-term', 'title');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+  <div class="statistics">
+    
+    
+
+    
+      
+        <!-- 不蒜子统计PV -->
+        <span id="busuanzi_container_site_pv" style="display: none">
+            总访问量 
+            <span id="busuanzi_value_site_pv"></span>
+             次
+          </span>
+      
+      
+        <!-- 不蒜子统计UV -->
+        <span id="busuanzi_container_site_uv" style="display: none">
+            总访客数 
+            <span id="busuanzi_value_site_uv"></span>
+             人
+          </span>
+      
+    
+  </div>
+
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js" ></script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+<script>
+
+function observeAndDisplay(sourceId, targetId) {
+  if (document.getElementById(sourceId)) {
+    new MutationObserver(m => {
+      m.forEach(m => {
+        if (m.target.textContent.trim() !== '') {
+          document.getElementById(targetId).style.display = 'inline';
+        }
+      });
+    })
+      .observe(
+        document.getElementById(sourceId),
+        { childList: true, characterData: true, subtree: true }
+      );
+  }
+
+}
+
+observeAndDisplay('busuanzi_value_page_pv', 'busuanzi_container_page_pv');
+observeAndDisplay('busuanzi_value_site_pv', 'busuanzi_container_site_pv');
+observeAndDisplay('busuanzi_value_site_uv', 'busuanzi_container_site_uv');
+
+
+</script>
+
+  <script defer src="https://cn.vercount.one/js?i=/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

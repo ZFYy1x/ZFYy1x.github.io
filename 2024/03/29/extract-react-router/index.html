@@ -1,0 +1,518 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;dark&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/shinchan.png">
+  <link rel="icon" href="/img/shinchan.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="Ovie博客,Ovi3博客">
+  <meta name="author" content="Ovie">
+  <meta name="keywords" content="Ovie博客,Ovi3博客,个人博客,技术分享,网络安全,安全研发,安全研究,渗透测试">
+  <meta name="google-site-verification" content="eW4bY2KPHT_B6-DOYCuxmzwdjlQ34WXHQ4X3G__8cKY" />
+  
+  <title>提取React前端路由 - Ovie博客</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.7.2/styles/vs2015.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"ovi3.github.io","root":"/","version":"1.8.11","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.2"><link rel="alternate" href="/atom.xml" title="Ovie博客" type="application/atom+xml">
+<link rel="alternate" href="/rss2.xml" title="Ovie博客" type="application/rss+xml">
+</head>
+
+
+<body>
+  <header style="height: 60vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Ovie</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/atom.xml">
+                <i class="iconfont icon-rss-fill"></i>
+                 
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('https://api.boxmoe.com/random.php?3') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="提取React前端路由">
+              
+                提取React前端路由
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2024-03-29 18:35" pubdate>
+        2024年3月29日 晚上
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      924 字
+    </span>
+  
+
+  
+
+  
+  
+    
+      <!-- 不蒜子统计文章PV -->
+      <span id="busuanzi_container_page_pv" style="display: none">
+        <i class="iconfont icon-eye" aria-hidden="true"></i>
+        <span id="busuanzi_value_page_pv"></span> 次
+      </span>
+    
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">提取React前端路由</h1>
+            
+            <div class="markdown-body">
+              <h1 id="提取React前端路由"><a href="#提取React前端路由" class="headerlink" title="提取React前端路由"></a>提取React前端路由</h1><p>写了个脚本，用于提取使用React和react-router模块编写的页面的前端路由。脚本在<a target="_blank" rel="noopener" href="https://github.com/Ovi3/extract-react-router">Github</a>上。</p>
+<h2 id="脚本执行步骤"><a href="#脚本执行步骤" class="headerlink" title="脚本执行步骤"></a>脚本执行步骤</h2><ol>
+<li><p>找到<code>React Container</code>：翻阅React源码，用于存储Container的属性名在不同React版本下有些不同：</p>
+ <figure class="highlight jsx"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs jsx"><span class="hljs-attr">https</span>:<span class="hljs-comment">//github.com/facebook/react/blob/v16.14.0/packages/react-dom/src/client/ReactDOMComponentTree.js#L39 :</span><br><span class="hljs-keyword">const</span> internalInstanceKey = <span class="hljs-string">&#x27;__reactFiber$&#x27;</span> + randomKey;<br><span class="hljs-keyword">const</span> internalContainerInstanceKey = <span class="hljs-string">&#x27;__reactContainer$&#x27;</span> + randomKey;<br><br><span class="hljs-attr">https</span>:<span class="hljs-comment">//github.com/facebook/react/blob/v16.13.1/packages/react-dom/src/client/ReactDOMComponentTree.js#L21 :</span><br><span class="hljs-keyword">const</span> internalInstanceKey = <span class="hljs-string">&#x27;__reactInternalInstance$&#x27;</span> + randomKey;<br><span class="hljs-keyword">const</span> internalContainerInstanceKey = <span class="hljs-string">&#x27;__reactContainere$&#x27;</span> + randomKey;<br><br><span class="hljs-attr">https</span>:<span class="hljs-comment">//github.com/facebook/react/blob/v16.9.0/packages/react-dom/src/client/ReactDOM.js#L556 :</span><br>root = container.<span class="hljs-property">_reactRootContainer</span> = <span class="hljs-title function_">legacyCreateRootFromDOMContainer</span>(xx)<br></code></pre></div></td></tr></table></figure>
+</li>
+<li><p>递归遍历<code>Container</code>的属性，识别<code>Routes</code>组件或<code>RouterProvider</code>组件：</p>
+<ul>
+<li><code>Routes</code>组件里包裹一个或多个<code>Route</code>组件，而<code>Route</code>组件的属性见<a target="_blank" rel="noopener" href="https://github.com/remix-run/react-router/blob/9e7486b89e712b765d947297f228650cdc0c488e/packages/react-router/lib/components.tsx#L385">源码</a> （React Route 版本6）， React Route 版本5的在<a target="_blank" rel="noopener" href="https://github.com/remix-run/react-router/blob/v5.3.4/packages/react-router/modules/Route.js#L82">这里</a>，这两个版本的<code>Route</code>组件属性差别不大，通常就用到<code>path</code>属性和指定渲染组件的属性，<code>element</code>、<code>component</code>或<code>render</code></li>
+<li><code>RouterProvider</code>组件的属性见<a target="_blank" rel="noopener" href="https://github.com/remix-run/react-router/blob/9e7486b89e712b765d947297f228650cdc0c488e/packages/react-router/lib/components.tsx#L60">源码</a> ，这个组件是从react router 6版本开始支持的。</li>
+</ul>
+</li>
+<li><p>提取路由里的路径信息，并处理嵌套路由的情况</p>
+</li>
+</ol>
+<h2 id="测试"><a href="#测试" class="headerlink" title="测试"></a>测试</h2><p>根据React Route官方文档编写一个标准的、用于测试的前端项目：<a target="_blank" rel="noopener" href="https://github.com/Ovi3/react-router-test">https://github.com/Ovi3/react-router-test</a> 。 再全网搜索基于React的前端，去测试，修改，尽量适配、兼容多种情况。</p>
+<p>还是会有些缺陷：</p>
+<ol>
+<li>该脚本只处理基于react-router-dom、react-router模块的路由， 不处理其它的，如<a target="_blank" rel="noopener" href="https://github.com/BGmi/BGmi">BGmi</a>使用的 <code>@generouted/react-router</code> 库， 一些站点（<code>fofa query：title=&quot;DC Base&quot;</code>）使用 <code>@tanstack/react-location</code> 模块等。</li>
+<li>暂未考虑一个页面里存在多个Container的情况</li>
+<li>子路由Routes组件通过动态返回（<code>return</code>）时，获取不到该子路由信息。 （当页面渲染了该子路由组件是可以获取，该脚本未实现。 或者可通过其它方式获取？）</li>
+</ol>
+<p>从提取结果上看有时不如使用<code>linkfinder</code>直接正则匹配， 不过提取前端路由的优点是知道这个路径是前端路由，知道要用浏览器去访问，去渲染页面。 且知道是用url路径还是hash路径去访问。换个角度说，在<code>burpsuite</code>里爆破<code>linkfinder</code>匹配出来路径很多都响应同一个html页面时，这些路径可能就是前端路由，可以尝试用浏览器去访问看看。</p>
+<h2 id="其它"><a href="#其它" class="headerlink" title="其它"></a>其它</h2><p>看了几天React跟React Router，有时还不如直接运行一个递归遍历全局对象的js脚本，直接打印出可能是url路径的字符串：</p>
+<figure class="highlight jsx"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs jsx"><span class="hljs-comment">// 广度优先算法</span><br><span class="hljs-keyword">function</span> <span class="hljs-title function_">traverseObject</span>(<span class="hljs-params">obj, prefix = <span class="hljs-string">&#x27;&#x27;</span>, maxDepth = <span class="hljs-number">32</span></span>) &#123;<br>    <span class="hljs-keyword">let</span> pathes = [];<br>    <span class="hljs-keyword">let</span> queue = [&#123; obj, prefix, <span class="hljs-attr">depth</span>: <span class="hljs-number">0</span> &#125;];<br>    <span class="hljs-keyword">let</span> visited = <span class="hljs-keyword">new</span> <span class="hljs-title class_">WeakSet</span>();<br><br>    <span class="hljs-keyword">while</span> (queue.<span class="hljs-property">length</span> &gt; <span class="hljs-number">0</span>) &#123;<br>        <span class="hljs-keyword">let</span> &#123; obj, prefix, depth &#125; = queue.<span class="hljs-title function_">shift</span>();<br><br>        <span class="hljs-keyword">if</span> (depth &gt; maxDepth || visited.<span class="hljs-title function_">has</span>(obj)) &#123;<br>            <span class="hljs-keyword">continue</span>;<br>        &#125;<br><br>        visited.<span class="hljs-title function_">add</span>(obj);<br><br>        <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> prop <span class="hljs-keyword">in</span> obj) &#123;<br>            <span class="hljs-keyword">let</span> newPrefix = prefix.<span class="hljs-property">length</span> &gt; <span class="hljs-number">0</span> ? prefix + <span class="hljs-string">&quot;.&quot;</span> + prop : prop;<br><br>            <span class="hljs-keyword">try</span> &#123;<br>                <span class="hljs-keyword">if</span> ([<span class="hljs-string">&#x27;parent&#x27;</span>, <span class="hljs-string">&#x27;window&#x27;</span>, <span class="hljs-string">&#x27;top&#x27;</span>, <span class="hljs-string">&#x27;self&#x27;</span>, <span class="hljs-string">&#x27;parentNode&#x27;</span>, <span class="hljs-string">&#x27;parentElement&#x27;</span>, <span class="hljs-string">&#x27;ownerDocument&#x27;</span>, <span class="hljs-string">&#x27;ownerElement&#x27;</span>,<br>                    <span class="hljs-string">&#x27;previousElementSibling&#x27;</span>, <span class="hljs-string">&#x27;previousSibling&#x27;</span>, <span class="hljs-string">&#x27;offsetParent&#x27;</span>,<br>                    <span class="hljs-string">&#x27;_parentVnode&#x27;</span>, <span class="hljs-string">&#x27;$parent&#x27;</span>, <span class="hljs-string">&#x27;_renderProxy&#x27;</span>, <span class="hljs-comment">// vue</span><br>                    <span class="hljs-string">&#x27;return&#x27;</span>, <span class="hljs-string">&#x27;containerInfo&#x27;</span>, <span class="hljs-string">&#x27;_debugOwner&#x27;</span>, <span class="hljs-string">&#x27;_owner&#x27;</span> <span class="hljs-comment">// react</span><br>                ].<span class="hljs-title function_">includes</span>(prop)) &#123;<br>                    <span class="hljs-keyword">continue</span>;<br>                &#125;<br><br>                <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> obj[prop] === <span class="hljs-string">&#x27;object&#x27;</span> &amp;&amp; obj[prop] !== <span class="hljs-literal">null</span>) &#123;<br>                    queue.<span class="hljs-title function_">push</span>(&#123; <span class="hljs-attr">obj</span>: obj[prop], <span class="hljs-attr">prefix</span>: newPrefix, <span class="hljs-attr">depth</span>: depth + <span class="hljs-number">1</span> &#125;);<br>                &#125; <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span> (<span class="hljs-keyword">typeof</span> obj[prop] === <span class="hljs-string">&#x27;string&#x27;</span> &amp;&amp; obj[prop].<span class="hljs-property">length</span> &gt; <span class="hljs-number">0</span>) &#123;<br>                    <span class="hljs-keyword">if</span> (obj[prop].<span class="hljs-title function_">indexOf</span>(<span class="hljs-string">&quot; &quot;</span>) === -<span class="hljs-number">1</span> &amp;&amp; (obj[prop].<span class="hljs-title function_">indexOf</span>(<span class="hljs-string">&quot;/&quot;</span>) === <span class="hljs-number">0</span> || newPrefix.<span class="hljs-title function_">indexOf</span>(<span class="hljs-string">&quot;route&quot;</span>) !== -<span class="hljs-number">1</span> || newPrefix.<span class="hljs-title function_">indexOf</span>(<span class="hljs-string">&quot;path&quot;</span>) !== -<span class="hljs-number">1</span>)) &#123;<br>                        <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(newPrefix + <span class="hljs-string">&quot;: &quot;</span> + obj[prop]);<br>                        pathes.<span class="hljs-title function_">push</span>(obj[prop]);<br>                    &#125;<br>                &#125;<br>            &#125; <span class="hljs-keyword">catch</span> (e) &#123;<br>                <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;访问 &#x27;</span> + newPrefix + <span class="hljs-string">&#x27; 时错误: &#x27;</span> + e);<br>            &#125;<br>        &#125;<br>    &#125;<br><br>    pathes = pathes.<span class="hljs-title function_">filter</span>(<span class="hljs-keyword">function</span>(<span class="hljs-params">value, index, self</span>) &#123;<br>        <span class="hljs-keyword">return</span> self.<span class="hljs-title function_">indexOf</span>(value) === index;<br>      &#125;);<br>      <br>    <span class="hljs-keyword">return</span> pathes;<br>&#125;<br><br><span class="hljs-variable language_">console</span>.<span class="hljs-title function_">table</span>(<span class="hljs-title function_">traverseObject</span>(<span class="hljs-variable language_">document</span>));<br><br></code></pre></div></td></tr></table></figure>
+
+<h2 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h2><ul>
+<li>react-router文档：<a target="_blank" rel="noopener" href="https://reactrouter.com/en/main">https://reactrouter.com/en/main</a></li>
+</ul>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/Web%E5%AE%89%E5%85%A8/">Web安全</a>
+                    
+                      <a class="hover-with-bg" href="/tags/JavaScript/">JavaScript</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/07/21/evil-nuclei-template/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">恶意的Nuclei模板</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/01/18/burpsuite-java-extension-ui/">
+                        <span class="hidden-mobile">Burpsuite Java插件开发 - UI篇</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments" lazyload>
+                
+                  
+                
+                
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'Ovi3/Ovi3.github.io');
+      s.setAttribute('issue-term', 'title');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+  <div class="statistics">
+    
+    
+
+    
+      
+        <!-- 不蒜子统计PV -->
+        <span id="busuanzi_container_site_pv" style="display: none">
+            总访问量 
+            <span id="busuanzi_value_site_pv"></span>
+             次
+          </span>
+      
+      
+        <!-- 不蒜子统计UV -->
+        <span id="busuanzi_container_site_uv" style="display: none">
+            总访客数 
+            <span id="busuanzi_value_site_uv"></span>
+             人
+          </span>
+      
+    
+  </div>
+
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js" ></script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+<script>
+
+function observeAndDisplay(sourceId, targetId) {
+  if (document.getElementById(sourceId)) {
+    new MutationObserver(m => {
+      m.forEach(m => {
+        if (m.target.textContent.trim() !== '') {
+          document.getElementById(targetId).style.display = 'inline';
+        }
+      });
+    })
+      .observe(
+        document.getElementById(sourceId),
+        { childList: true, characterData: true, subtree: true }
+      );
+  }
+
+}
+
+observeAndDisplay('busuanzi_value_page_pv', 'busuanzi_container_page_pv');
+observeAndDisplay('busuanzi_value_site_pv', 'busuanzi_container_site_pv');
+observeAndDisplay('busuanzi_value_site_uv', 'busuanzi_container_site_uv');
+
+
+</script>
+
+  <script defer src="https://cn.vercount.one/js?i=/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

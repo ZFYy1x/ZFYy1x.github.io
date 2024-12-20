@@ -1,0 +1,546 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;dark&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/shinchan.png">
+  <link rel="icon" href="/img/shinchan.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="Ovie博客,Ovi3博客">
+  <meta name="author" content="Ovie">
+  <meta name="keywords" content="Ovie博客,Ovi3博客,个人博客,技术分享,网络安全,安全研发,安全研究,渗透测试">
+  <meta name="google-site-verification" content="eW4bY2KPHT_B6-DOYCuxmzwdjlQ34WXHQ4X3G__8cKY" />
+  
+  <title>Python的模块引入 - Ovie博客</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.7.2/styles/vs2015.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"ovi3.github.io","root":"/","version":"1.8.11","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.2"><link rel="alternate" href="/atom.xml" title="Ovie博客" type="application/atom+xml">
+<link rel="alternate" href="/rss2.xml" title="Ovie博客" type="application/rss+xml">
+</head>
+
+
+<body>
+  <header style="height: 60vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Ovie</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/atom.xml">
+                <i class="iconfont icon-rss-fill"></i>
+                 
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('https://api.boxmoe.com/random.php?3') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="Python的模块引入">
+              
+                Python的模块引入
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2017-04-24 02:24" pubdate>
+        2017年4月24日 凌晨
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      1.2k 字
+    </span>
+  
+
+  
+
+  
+  
+    
+      <!-- 不蒜子统计文章PV -->
+      <span id="busuanzi_container_page_pv" style="display: none">
+        <i class="iconfont icon-eye" aria-hidden="true"></i>
+        <span id="busuanzi_value_page_pv"></span> 次
+      </span>
+    
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Python的模块引入</h1>
+            
+            <div class="markdown-body">
+              <p>环境：</p>
+<blockquote>
+<p>大部分在Python3.7下测试执行</p>
+</blockquote>
+<h2 id="import语句很长时该怎么书写"><a href="#import语句很长时该怎么书写" class="headerlink" title="import语句很长时该怎么书写"></a>import语句很长时该怎么书写</h2><p>可以：</p>
+<figure class="highlight css"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs css"><span class="hljs-selector-tag">from</span> Tkinter import Tk, Frame, <span class="hljs-selector-tag">Button</span>, Entry, <span class="hljs-selector-tag">Canvas</span>, Text, \<br>    <span class="hljs-attribute">LEFT</span>, DISABLED, <span class="hljs-attribute">NORMAL</span>, RIDGE, END<br></code></pre></div></td></tr></table></figure>
+
+<p>也可以：</p>
+<figure class="highlight css"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs css"><span class="hljs-selector-tag">from</span> Tkinter import Tk, Frame, <span class="hljs-selector-tag">Button</span>, Entry, <span class="hljs-selector-tag">Canvas</span>, Text<br><span class="hljs-selector-tag">from</span> Tkinter import <span class="hljs-attribute">LEFT</span>, DISABLED, <span class="hljs-attribute">NORMAL</span>, RIDGE, END<br></code></pre></div></td></tr></table></figure>
+
+<p>但官方建议使用括号：</p>
+<figure class="highlight elm"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs elm"><span class="hljs-title">from</span> <span class="hljs-type">Tkinter</span> <span class="hljs-keyword">import</span> (<span class="hljs-type">Tk</span>, <span class="hljs-type">Frame</span>, <span class="hljs-type">Button</span>, <span class="hljs-type">Entry</span>, <span class="hljs-type">Canvas</span>, <span class="hljs-type">Text</span>,<br>    <span class="hljs-type">LEFT</span>, <span class="hljs-type">DISABLED</span>, <span class="hljs-type">NORMAL</span>, <span class="hljs-type">RIDGE</span>, <span class="hljs-type">END</span>)<br></code></pre></div></td></tr></table></figure>
+
+
+
+
+
+<h2 id="模块查找顺序"><a href="#模块查找顺序" class="headerlink" title="模块查找顺序"></a>模块查找顺序</h2><ol>
+<li>先搜索内置模块(<code>built-in module</code>，内置在python编译器)，如<code>winreg</code>模块(或叫<code>_winreg</code>模块，只在Windows下存在)</li>
+<li>从<code>sys.path</code>（list类型）指定的一个个目录里搜索。</li>
+</ol>
+<h4 id="关于sys-path"><a href="#关于sys-path" class="headerlink" title="关于sys.path"></a>关于<code>sys.path</code></h4><p>执行<code>python script.py</code>时，<code>sys.path</code>的第一个元素是<code>script.py</code>文件所在的目录；如果不指定脚本文件，如；直接执行<code>python</code>进入交互模式，或执行<code>python -m expectd.package.module</code>等，<code>sys.path</code>的第一个元素就是空字符串，代表执行<code>python</code>命令时所在的目录。</p>
+<p><code>sys.path</code>还包括<code>PYTHONPATH</code>环境变量指定的目录，和安装时指定的默认值(<code>The installation-dependent default</code>)</p>
+<h2 id="绝对引入"><a href="#绝对引入" class="headerlink" title="绝对引入"></a>绝对引入</h2><p>一个目录结构为：</p>
+<figure class="highlight vim"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs vim">package/<br>	__init__.<span class="hljs-keyword">py</span><br>	<span class="hljs-built_in">string</span>.<span class="hljs-keyword">py</span><br>	test.<span class="hljs-keyword">py</span><br></code></pre></div></td></tr></table></figure>
+
+<p>在<code>test.py</code>里写<code>import string</code>，然后在<code>package/</code>目录的上一层目录（以让python找到我们自己写的<code>package</code>的位置）执行<code>python -m package.test</code>，那<code>import</code>的是同目录下的<code>string</code>模块，还是python自带的<code>string</code>模块呢？</p>
+<p>在Python2.7下测试，是引入同目录下的<code>string</code>模块，因为<code>import string</code>语句会先查找同目录下的模块。这样的引入方式，无法在不重命名<code>package/string.py</code>文件的情况下导入python自带的<code>string</code>模块。所以Python加了一个绝对引入（<code>absolute import</code>），且在python3中默认使用，而在Python 2中使用绝对引入，需要在文件头写：<code>from __future__ import absolute_import</code>。</p>
+<p>绝对引入是指<code>import</code>时，都是从<code>sys.path</code>指定的目录下查找包或模块。如：<code>import foo</code>，<code>from foo import bar</code>。有了绝对引入，那要引入同目录下的模块，需要加上<code>.</code>符号，这叫相对引入(<code>relative import</code>， 相对于当前模块来引入)。如：<code>from .foo import bar</code>。而要引入上一层的模块，就用两个点，要引入上上一层就用三个点，如：<code>from ..foo import bar</code>引入上一层的模块。另外，要引入上一层的模块时，不可以写成<code>import ..foo</code>，而是写成<code>from .. import foo</code>。</p>
+<p>所以上面在python3测试，是引入python自带的<code>string</code>模块，若要引入同目录下的string模块，就写成<code>from . import string</code></p>
+<h2 id="init-py文件"><a href="#init-py文件" class="headerlink" title="__init__.py文件"></a><code>__init__.py</code>文件</h2><p>在目录下有<code>__init__.py</code>文件，Python才会把该目录看作包（<code>package</code>），在该文件中可以写初始化代码（引入包或包里模块等时会执行<code>__init__.py</code>），也可以设置<code>__all__</code>变量。</p>
+<p>一个包的目录结构为：</p>
+<figure class="highlight vim"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs vim">package/<br>	__init__.<span class="hljs-keyword">py</span><br>	moduleX.<span class="hljs-keyword">py</span><br>	moduleY.<span class="hljs-keyword">py</span><br></code></pre></div></td></tr></table></figure>
+
+<p>如果<code>__init__.py</code>文件的<code>__all__</code>变量没设置，执行<code>from package import *</code>或<code>import package</code>并不会引入<code>package</code>下的子模块或子包，而仅仅是引入该包（一般会执行<code>__init__.py</code>的代码）。需要这样写<code>from package import moduleX, moduleY</code>，就可以引入模块。</p>
+<p>如果<code>__init__.py</code>文件里写<code>__all__ = [&#39;moduleX&#39;, &#39;moduleY&#39;]</code>，执行<code>from package import *</code>就会引入<code>__all__</code>里的模块或子包，也就是会在当前域中存在<code>moduleX</code>和<code>moduleY</code>变量。</p>
+<h2 id="python-script"><a href="#python-script" class="headerlink" title="python script"></a>python script</h2><p>有些时候并不是要写一个模块供调用，而是写几个脚本来执行。</p>
+<p>目录结构为：</p>
+<figure class="highlight vim"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs vim">my_scripts/<br>	sub/<br>		__init__.<span class="hljs-keyword">py</span><br>		fibo.<span class="hljs-keyword">py</span><br>	helper.<span class="hljs-keyword">py</span><br>	test.<span class="hljs-keyword">py</span><br></code></pre></div></td></tr></table></figure>
+
+<p>（因为要在<code>test.py</code>文件中引入<code>sub/fibo.py</code>，需要告诉Python <code>sub</code>目录是个包，所以要放置<code>__init__.py</code>文件）</p>
+<p>在<code>test.py</code>里引入</p>
+<figure class="highlight elm"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs elm"><span class="hljs-keyword">import</span> helper<br><span class="hljs-title">from</span> sub <span class="hljs-keyword">import</span> fibo<br></code></pre></div></td></tr></table></figure>
+
+<p>然后在<code>my_scripts/</code>目录下执行<code>python test.py</code>。可以引入，没有报错。这是为什么？</p>
+<p>像上面说的，<code>sys.path</code>的第一个元素是<code>test.py</code>所在的目录，所以上面两个绝对引入是可以找得到<code>helper</code>跟<code>fibo</code>的。</p>
+<h2 id="python-m命令"><a href="#python-m命令" class="headerlink" title="python -m命令"></a>python -m命令</h2><p>模块除了被<code>import</code>，也可以直接用<code>python -m</code>命令把模块当脚本来执行。如：<code>python -m json.tool</code>执行json包里的tool模块，用来格式化JSON数据。还有<code>python -m pdb script.py</code>、<code>python -m profile script.py</code>等。</p>
+<p><code>python -m</code>命令，实际上是调用<code>runpy</code>模块的<code>runpy.run_module(mod_name, init_globals=None, run_name=None, alter_sys=False)</code>方法，其会搜索模块，依据加载的包、模块名来设置<code>__package__</code>属性等，以便让相对引入正确执行。例如执行<code>python -m json.tool</code>时，<code>__name__</code>设置成<code>json.tool</code>，<code>__package__</code>设置成<code>&quot;json.tool&quot;.rpartition(&#39;.&#39;)[0]</code>，即<code>json</code>。</p>
+<h2 id="参考链接"><a href="#参考链接" class="headerlink" title="参考链接"></a>参考链接</h2><ul>
+<li>Python Modules:  <a target="_blank" rel="noopener" href="https://docs.python.org/2.7/tutorial/modules.html">https://docs.python.org/2.7/tutorial/modules.html</a></li>
+<li>PEP 328 – Imports: Multi-Line and Absolute/Relative：<a target="_blank" rel="noopener" href="https://www.python.org/dev/peps/pep-0328/">https://www.python.org/dev/peps/pep-0328/</a></li>
+<li>PEP 366 – Main module explicit relative imports:  <a target="_blank" rel="noopener" href="https://www.python.org/dev/peps/pep-0366/">https://www.python.org/dev/peps/pep-0366/</a></li>
+<li>PEP 338 – Executing modules as scripts:  <a target="_blank" rel="noopener" href="https://www.python.org/dev/peps/pep-0338/">https://www.python.org/dev/peps/pep-0338/</a></li>
+</ul>
+<h2 id="其它"><a href="#其它" class="headerlink" title="其它"></a>其它</h2><figure class="highlight angelscript"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs angelscript"><span class="hljs-keyword">from</span> fibo <span class="hljs-keyword">import</span> *<br></code></pre></div></td></tr></table></figure>
+
+<p><code>fibo</code>是个模块，该<code>import</code>会导入<code>fibo</code>模块下所有变量，除了以<code>_</code>开头的变量。</p>
+<p><code>dir()</code>不会列出内置函数和内置变量，如果想要获取内置函数和内置变量，使用<code>import builtins; dir(builtins)</code></p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/Python/">Python</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2017/06/14/gdb-change-program-stdio/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">一个GDB调试技巧：修改程序的标准输入</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2017/01/20/django-csrf-protect-principle/">
+                        <span class="hidden-mobile">Django CSRF防御具体流程</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments" lazyload>
+                
+                  
+                
+                
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'Ovi3/Ovi3.github.io');
+      s.setAttribute('issue-term', 'title');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+  <div class="statistics">
+    
+    
+
+    
+      
+        <!-- 不蒜子统计PV -->
+        <span id="busuanzi_container_site_pv" style="display: none">
+            总访问量 
+            <span id="busuanzi_value_site_pv"></span>
+             次
+          </span>
+      
+      
+        <!-- 不蒜子统计UV -->
+        <span id="busuanzi_container_site_uv" style="display: none">
+            总访客数 
+            <span id="busuanzi_value_site_uv"></span>
+             人
+          </span>
+      
+    
+  </div>
+
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js" ></script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+<script>
+
+function observeAndDisplay(sourceId, targetId) {
+  if (document.getElementById(sourceId)) {
+    new MutationObserver(m => {
+      m.forEach(m => {
+        if (m.target.textContent.trim() !== '') {
+          document.getElementById(targetId).style.display = 'inline';
+        }
+      });
+    })
+      .observe(
+        document.getElementById(sourceId),
+        { childList: true, characterData: true, subtree: true }
+      );
+  }
+
+}
+
+observeAndDisplay('busuanzi_value_page_pv', 'busuanzi_container_page_pv');
+observeAndDisplay('busuanzi_value_site_pv', 'busuanzi_container_site_pv');
+observeAndDisplay('busuanzi_value_site_uv', 'busuanzi_container_site_uv');
+
+
+</script>
+
+  <script defer src="https://cn.vercount.one/js?i=/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

@@ -1,0 +1,510 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;dark&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/shinchan.png">
+  <link rel="icon" href="/img/shinchan.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="Ovie博客,Ovi3博客">
+  <meta name="author" content="Ovie">
+  <meta name="keywords" content="Ovie博客,Ovi3博客,个人博客,技术分享,网络安全,安全研发,安全研究,渗透测试">
+  <meta name="google-site-verification" content="eW4bY2KPHT_B6-DOYCuxmzwdjlQ34WXHQ4X3G__8cKY" />
+  
+  <title>Java Swing表格多列排序 - Ovie博客</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.7.2/styles/vs2015.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"ovi3.github.io","root":"/","version":"1.8.11","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.2"><link rel="alternate" href="/atom.xml" title="Ovie博客" type="application/atom+xml">
+<link rel="alternate" href="/rss2.xml" title="Ovie博客" type="application/rss+xml">
+</head>
+
+
+<body>
+  <header style="height: 60vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Ovie</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/atom.xml">
+                <i class="iconfont icon-rss-fill"></i>
+                 
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('https://api.boxmoe.com/random.php?3') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="Java Swing表格多列排序">
+              
+                Java Swing表格多列排序
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2019-11-29 22:08" pubdate>
+        2019年11月29日 晚上
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      1.8k 字
+    </span>
+  
+
+  
+
+  
+  
+    
+      <!-- 不蒜子统计文章PV -->
+      <span id="busuanzi_container_page_pv" style="display: none">
+        <i class="iconfont icon-eye" aria-hidden="true"></i>
+        <span id="busuanzi_value_page_pv"></span> 次
+      </span>
+    
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Java Swing表格多列排序</h1>
+            
+            <div class="markdown-body">
+              <p>Java Swing JTable开启排序功能只需一个调用：</p>
+<figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs Java"><span class="hljs-type">JTable</span> <span class="hljs-variable">table</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JTable</span>();<br>table.setAutoCreateRowSorter(<span class="hljs-literal">true</span>);<br></code></pre></div></td></tr></table></figure>
+<p>但这个排序功能只支持单列排序，而多列排序需要自己实现。</p>
+<p>本文内容是使用sorter和renderer实现点击表头进行多列排序，第一次点击的列作为主排序列，后点击的列作为次排序列。建议在开始阅读本文前可以看看官方教程《<a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/tutorial/uiswing/components/table.html">How to Use Tables</a>》，对JTable的sorter和renderer有个概念。</p>
+<h4 id="分析"><a href="#分析" class="headerlink" title="分析"></a>分析</h4><p><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/8/docs/api/javax/swing/RowSorter.html"><code>TableRowSorter</code></a>对象已经提供了多列排序的功能：</p>
+<figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs Java">TableRowSorter&lt;TableModel&gt; sorter <br>    = <span class="hljs-keyword">new</span> <span class="hljs-title class_">TableRowSorter</span>&lt;TableModel&gt;(table.getModel());<br>table.setRowSorter(sorter);<br><br>List &lt;RowSorter.SortKey&gt; sortKeys <br>    = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;RowSorter.SortKey&gt;();<br>sortKeys.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">RowSorter</span>.SortKey(<span class="hljs-number">1</span>, SortOrder.ASCENDING));<br>sortKeys.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">RowSorter</span>.SortKey(<span class="hljs-number">0</span>, SortOrder.ASCENDING));<br>sorter.setSortKeys(sortKeys);  <span class="hljs-comment">// 执行排序</span><br></code></pre></div></td></tr></table></figure>
+<p>上面是把第1列作为主排序列升序排序，把第0列作为次排序列降序排序。</p>
+<p>表格的表头由<code>JTableHeader</code>对象维护，该对象里维护着<code>BaseTableHeaderUI</code>对象，这个对象里设置了<code>mouseInputListener</code>监听器进行监听，当点击表头后就通知该监听器调用<code>sorter.toggleSortOrder</code>方法进行排序。所以我们需要继承<code>TableRowSorter</code>类重写<code>toggleSortOrder</code>方法实现自己的排序逻辑。</p>
+<p>另一个要考虑的就是表头的上下箭头显示，用于显示该列是升序或降序排序。</p>
+<p><a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/8/docs/api/javax/swing/table/JTableHeader.html"><code>JTableHeader</code></a>对象默认使用<code>DefaultTableCellHeaderRenderer</code>对象作为表头<code>Renderer</code>，<code>Renderer</code>的<code>getTableCellRendererComponent</code>方法里设置上下箭头图标并返回用于显示表头单元格的组件，而该方法里调用的<code>getColumnSortOrder</code>方法只会返回主排序列的排序顺序，通过该方法的返回值只能显示主排序列的箭头。所以需要重写<code>DefaultTableCellHeaderRenderer</code>对象的相关方法实现让多个列显示上下箭头，再通过<code>JTable</code>的<code>getTableHeader().setDefaultRenderer(TableCellRenderer defaultRenderer)</code>方法指定我们的表头<code>Renderer</code>）</p>
+<h4 id="实现"><a href="#实现" class="headerlink" title="实现"></a>实现</h4><p>通过上面的分析，我们通过编写自己的sorter和renderer实现多列排序。<br>代码与相关注释（在JDK8下测试运行）：<br><code>TableSortDemo.java</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">package</span> com.test.sort;<br><br><span class="hljs-keyword">import</span> javax.swing.*;<br><span class="hljs-keyword">import</span> javax.swing.table.*;<br><span class="hljs-keyword">import</span> java.awt.*;<br><span class="hljs-keyword">import</span> java.awt.event.MouseAdapter;<br><span class="hljs-keyword">import</span> java.awt.event.MouseEvent;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">TableSortDemo</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">JPanel</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">TableSortDemo</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-built_in">super</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">GridLayout</span>(<span class="hljs-number">1</span>, <span class="hljs-number">0</span>));<br><br>        <span class="hljs-type">JTable</span> <span class="hljs-variable">table</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JTable</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">AbstractTableModel</span>() &#123;<br>            <span class="hljs-keyword">private</span> String[] columnNames = &#123;<span class="hljs-string">&quot;First Name&quot;</span>,<br>                    <span class="hljs-string">&quot;Last Name&quot;</span>,<br>                    <span class="hljs-string">&quot;Sport&quot;</span>,<br>                    <span class="hljs-string">&quot;# of Years&quot;</span>,<br>                    <span class="hljs-string">&quot;Vegetarian&quot;</span>&#125;;<br>            <span class="hljs-keyword">private</span> Object[][] data = &#123;<br>                    &#123;<span class="hljs-string">&quot;Kathy&quot;</span>, <span class="hljs-string">&quot;Smith&quot;</span>,<br>                            <span class="hljs-string">&quot;Snowboarding&quot;</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Integer</span>(<span class="hljs-number">10</span>), <span class="hljs-keyword">new</span> <span class="hljs-title class_">Boolean</span>(<span class="hljs-literal">false</span>)&#125;,<br>                    &#123;<span class="hljs-string">&quot;John&quot;</span>, <span class="hljs-string">&quot;Doe&quot;</span>,<br>                            <span class="hljs-string">&quot;Rowing&quot;</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Integer</span>(<span class="hljs-number">3</span>), <span class="hljs-keyword">new</span> <span class="hljs-title class_">Boolean</span>(<span class="hljs-literal">true</span>)&#125;,<br>                    &#123;<span class="hljs-string">&quot;Sue&quot;</span>, <span class="hljs-string">&quot;White&quot;</span>,<br>                            <span class="hljs-string">&quot;Knitting&quot;</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Integer</span>(<span class="hljs-number">2</span>), <span class="hljs-keyword">new</span> <span class="hljs-title class_">Boolean</span>(<span class="hljs-literal">false</span>)&#125;,<br>                    &#123;<span class="hljs-string">&quot;Kathy&quot;</span>, <span class="hljs-string">&quot;White&quot;</span>,<br>                            <span class="hljs-string">&quot;Speed reading&quot;</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Integer</span>(<span class="hljs-number">20</span>), <span class="hljs-keyword">new</span> <span class="hljs-title class_">Boolean</span>(<span class="hljs-literal">true</span>)&#125;,<br>                    &#123;<span class="hljs-string">&quot;Joe&quot;</span>, <span class="hljs-string">&quot;Brown&quot;</span>,<br>                            <span class="hljs-string">&quot;Pool&quot;</span>, <span class="hljs-keyword">new</span> <span class="hljs-title class_">Integer</span>(<span class="hljs-number">10</span>), <span class="hljs-keyword">new</span> <span class="hljs-title class_">Boolean</span>(<span class="hljs-literal">true</span>)&#125;<br>            &#125;;<br><br>            <span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">getColumnCount</span><span class="hljs-params">()</span> &#123;<br>                <span class="hljs-keyword">return</span> columnNames.length;<br>            &#125;<br><br>            <span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">getRowCount</span><span class="hljs-params">()</span> &#123;<br>                <span class="hljs-keyword">return</span> data.length;<br>            &#125;<br><br>            <span class="hljs-keyword">public</span> String <span class="hljs-title function_">getColumnName</span><span class="hljs-params">(<span class="hljs-type">int</span> col)</span> &#123;<br>                <span class="hljs-keyword">return</span> columnNames[col];<br>            &#125;<br><br>            <span class="hljs-keyword">public</span> Object <span class="hljs-title function_">getValueAt</span><span class="hljs-params">(<span class="hljs-type">int</span> row, <span class="hljs-type">int</span> col)</span> &#123;<br>                <span class="hljs-keyword">return</span> data[row][col];<br>            &#125;<br><br>            <span class="hljs-keyword">public</span> Class <span class="hljs-title function_">getColumnClass</span><span class="hljs-params">(<span class="hljs-type">int</span> c)</span> &#123;<br>                <span class="hljs-keyword">return</span> getValueAt(<span class="hljs-number">0</span>, c).getClass();<br>            &#125;<br>        &#125;);<br>        table.setPreferredScrollableViewportSize(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Dimension</span>(<span class="hljs-number">500</span>, <span class="hljs-number">70</span>));<br>        table.setFillsViewportHeight(<span class="hljs-literal">true</span>);<br><br>        <span class="hljs-comment">// 设置自己的Sorter</span><br>        MultiColumnTableRowSorter&lt;TableModel&gt; tableRowSorter = <span class="hljs-keyword">new</span> <span class="hljs-title class_">MultiColumnTableRowSorter</span>&lt;&gt;(table.getModel());<br>        table.setRowSorter(tableRowSorter);<br><br>        <span class="hljs-comment">// 设置自己的表头Render</span><br>        table.getTableHeader().setDefaultRenderer(<span class="hljs-keyword">new</span> <span class="hljs-title class_">MutilColumnTableCellHeaderRenderer</span>());<br><br>        <span class="hljs-comment">// 设置监听，输出排序列调试信息</span><br>        table.getTableHeader().addMouseListener(<span class="hljs-keyword">new</span> <span class="hljs-title class_">MouseAdapter</span>() &#123;<br>            <span class="hljs-meta">@Override</span><br>            <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">mouseClicked</span><span class="hljs-params">(MouseEvent e)</span> &#123;<br>                <span class="hljs-keyword">if</span> (e.getClickCount() % <span class="hljs-number">2</span> == <span class="hljs-number">1</span> &amp;&amp; SwingUtilities.isLeftMouseButton(e)) &#123;<br>                    <span class="hljs-type">JTableHeader</span> <span class="hljs-variable">header</span> <span class="hljs-operator">=</span> table.getTableHeader();<br>                    RowSorter sorter;<br>                    <span class="hljs-keyword">if</span> ((sorter = table.getRowSorter()) != <span class="hljs-literal">null</span>) &#123;<br>                        <span class="hljs-type">int</span> <span class="hljs-variable">columnIndex</span> <span class="hljs-operator">=</span> header.columnAtPoint(e.getPoint());<br>                        <span class="hljs-keyword">if</span> (columnIndex != -<span class="hljs-number">1</span>) &#123;<br>                            <span class="hljs-keyword">for</span> (Object key: sorter.getSortKeys()) &#123;<br>                                RowSorter.<span class="hljs-type">SortKey</span> <span class="hljs-variable">sortKey</span> <span class="hljs-operator">=</span> (RowSorter.SortKey)key;<br>                                System.out.print(sortKey.getColumn() + <span class="hljs-string">&quot;:&quot;</span> + sortKey.getSortOrder().name() + <span class="hljs-string">&quot;  |  &quot;</span>);<br>                            &#125;<br>                            System.out.println(<span class="hljs-string">&quot;\n--------------&quot;</span>);<br>                        &#125;<br>                    &#125;<br>                &#125;<br>            &#125;<br>        &#125;);<br><br>        <span class="hljs-type">JScrollPane</span> <span class="hljs-variable">scrollPane</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JScrollPane</span>(table);<br>        add(scrollPane);<br>    &#125;<br><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">createAndShowGUI</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-type">JFrame</span> <span class="hljs-variable">frame</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JFrame</span>(<span class="hljs-string">&quot;TableSortDemo&quot;</span>);<br>        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);<br><br>        <span class="hljs-type">TableSortDemo</span> <span class="hljs-variable">newContentPane</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">TableSortDemo</span>();<br>        newContentPane.setOpaque(<span class="hljs-literal">true</span>); <span class="hljs-comment">//content panes must be opaque</span><br>        frame.setContentPane(newContentPane);<br><br>        frame.pack();<br>        frame.setVisible(<span class="hljs-literal">true</span>);<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        javax.swing.SwingUtilities.invokeLater(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Runnable</span>() &#123;<br>            <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>                createAndShowGUI();<br>            &#125;<br>        &#125;);<br>    &#125;<br>&#125;<br></code></pre></div></td></tr></table></figure>
+
+<p><code>MultiColumnTableRowSorter.java</code>：</p>
+<figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">package</span> com.test.sort;<br><br><span class="hljs-keyword">import</span> javax.swing.*;<br><span class="hljs-keyword">import</span> javax.swing.table.TableModel;<br><span class="hljs-keyword">import</span> javax.swing.table.TableRowSorter;<br><span class="hljs-keyword">import</span> java.util.ArrayList;<br><span class="hljs-keyword">import</span> java.util.List;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MultiColumnTableRowSorter</span>&lt;M <span class="hljs-keyword">extends</span> <span class="hljs-title class_">TableModel</span>&gt; <span class="hljs-keyword">extends</span> <span class="hljs-title class_">TableRowSorter</span>&lt;M&gt; &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">MultiColumnTableRowSorter</span><span class="hljs-params">(M model)</span> &#123;<br>        <span class="hljs-built_in">super</span>(model);<br>    &#125;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">toggleSortOrder</span><span class="hljs-params">(<span class="hljs-type">int</span> column)</span> &#123;<br>        checkColumn(column);<br>        <span class="hljs-keyword">if</span> (isSortable(column)) &#123;<br>            List&lt;SortKey&gt; keys = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;SortKey&gt;(getSortKeys());<br>            SortKey sortKey;<br>            <span class="hljs-type">int</span> sortIndex;<br>            <span class="hljs-keyword">for</span> (sortIndex = keys.size() - <span class="hljs-number">1</span>; sortIndex &gt;= <span class="hljs-number">0</span>; sortIndex--) &#123;<br>                <span class="hljs-keyword">if</span> (keys.get(sortIndex).getColumn() == column) &#123;<br>                    <span class="hljs-keyword">break</span>;<br>                &#125;<br>            &#125;<br>            <span class="hljs-keyword">if</span> (sortIndex == -<span class="hljs-number">1</span>) &#123;<br>                <span class="hljs-comment">// Key doesn&#x27;t exist</span><br>                sortKey = <span class="hljs-keyword">new</span> <span class="hljs-title class_">SortKey</span>(column, SortOrder.ASCENDING);<br>                keys.add(sortKey);<br>            &#125;<br>            <span class="hljs-keyword">else</span> &#123;<br>                <span class="hljs-type">SortKey</span> <span class="hljs-variable">key</span> <span class="hljs-operator">=</span> keys.get(sortIndex);<br>                <span class="hljs-keyword">if</span>(key.getSortOrder() == SortOrder.ASCENDING)&#123;<br>                    key = <span class="hljs-keyword">new</span> <span class="hljs-title class_">SortKey</span>(key.getColumn(), SortOrder.DESCENDING);<br>                    keys.set(sortIndex, key);<br>                &#125;<br>                <span class="hljs-keyword">else</span> <span class="hljs-keyword">if</span>(key.getSortOrder() == SortOrder.DESCENDING)&#123;<br>                    keys.remove(sortIndex);<br>                &#125;<br>            &#125;<br><br>            <span class="hljs-keyword">if</span> (keys.size() &gt; getMaxSortKeys()) &#123;<br>                keys = keys.subList(getMaxSortKeys(), keys.size());<br>            &#125;<br>            setSortKeys(keys);<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">checkColumn</span><span class="hljs-params">(<span class="hljs-type">int</span> column)</span> &#123;<br>        <span class="hljs-keyword">if</span> (column &lt; <span class="hljs-number">0</span> || column &gt;= getModelWrapper().getColumnCount()) &#123;<br>            <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">IndexOutOfBoundsException</span>(<br>                    <span class="hljs-string">&quot;column beyond range of TableModel&quot;</span>);<br>        &#125;<br>    &#125;<br>&#125;<br></code></pre></div></td></tr></table></figure>
+
+<p><code>MutilColumnTableCellHeaderRenderer.java</code>（因为<code>sun.swing.table.DefaultTableCellRenderer</code>的<code>getColumnSortOrder</code>方法是静态方法不能被覆盖，所以直接复制<code>DefaultTableCellRenderer</code>类的代码修改<code>getColumnSortOrder</code>方法）:</p>
+<figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br><span class="line">104</span><br><span class="line">105</span><br><span class="line">106</span><br><span class="line">107</span><br><span class="line">108</span><br><span class="line">109</span><br><span class="line">110</span><br><span class="line">111</span><br><span class="line">112</span><br><span class="line">113</span><br><span class="line">114</span><br><span class="line">115</span><br><span class="line">116</span><br><span class="line">117</span><br><span class="line">118</span><br><span class="line">119</span><br><span class="line">120</span><br><span class="line">121</span><br><span class="line">122</span><br><span class="line">123</span><br><span class="line">124</span><br><span class="line">125</span><br><span class="line">126</span><br><span class="line">127</span><br><span class="line">128</span><br><span class="line">129</span><br><span class="line">130</span><br><span class="line">131</span><br><span class="line">132</span><br><span class="line">133</span><br><span class="line">134</span><br><span class="line">135</span><br><span class="line">136</span><br><span class="line">137</span><br><span class="line">138</span><br><span class="line">139</span><br><span class="line">140</span><br><span class="line">141</span><br><span class="line">142</span><br><span class="line">143</span><br><span class="line">144</span><br><span class="line">145</span><br><span class="line">146</span><br><span class="line">147</span><br><span class="line">148</span><br><span class="line">149</span><br><span class="line">150</span><br><span class="line">151</span><br><span class="line">152</span><br><span class="line">153</span><br><span class="line">154</span><br><span class="line">155</span><br><span class="line">156</span><br><span class="line">157</span><br><span class="line">158</span><br><span class="line">159</span><br><span class="line">160</span><br><span class="line">161</span><br><span class="line">162</span><br><span class="line">163</span><br><span class="line">164</span><br><span class="line">165</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">package</span> com.test.sort;<br><br><span class="hljs-keyword">import</span> sun.swing.DefaultLookup;<br><br><span class="hljs-keyword">import</span> javax.swing.*;<br><span class="hljs-keyword">import</span> javax.swing.border.Border;<br><span class="hljs-keyword">import</span> javax.swing.plaf.UIResource;<br><span class="hljs-keyword">import</span> javax.swing.table.DefaultTableCellRenderer;<br><span class="hljs-keyword">import</span> javax.swing.table.JTableHeader;<br><span class="hljs-keyword">import</span> java.awt.*;<br><span class="hljs-keyword">import</span> java.io.Serializable;<br><span class="hljs-keyword">import</span> java.util.List;<br><br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">MutilColumnTableCellHeaderRenderer</span> <span class="hljs-keyword">extends</span> <span class="hljs-title class_">DefaultTableCellRenderer</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">UIResource</span> &#123;<br>    <span class="hljs-keyword">private</span> <span class="hljs-type">boolean</span> horizontalTextPositionSet;<br>    <span class="hljs-keyword">private</span> Icon sortArrow;<br>    <span class="hljs-keyword">private</span> MutilColumnTableCellHeaderRenderer.<span class="hljs-type">EmptyIcon</span> <span class="hljs-variable">emptyIcon</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">MutilColumnTableCellHeaderRenderer</span>.EmptyIcon();<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-title function_">MutilColumnTableCellHeaderRenderer</span><span class="hljs-params">()</span> &#123;<br>        <span class="hljs-built_in">this</span>.setHorizontalAlignment(<span class="hljs-number">0</span>);<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">setHorizontalTextPosition</span><span class="hljs-params">(<span class="hljs-type">int</span> textPosition)</span> &#123;<br>        <span class="hljs-built_in">this</span>.horizontalTextPositionSet = <span class="hljs-literal">true</span>;<br>        <span class="hljs-built_in">super</span>.setHorizontalTextPosition(textPosition);<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> Component <span class="hljs-title function_">getTableCellRendererComponent</span><span class="hljs-params">(JTable table, Object value, <span class="hljs-type">boolean</span> isSelected, <span class="hljs-type">boolean</span> hasFocus, <span class="hljs-type">int</span> row, <span class="hljs-type">int</span> column)</span> &#123;<br>        <span class="hljs-type">Icon</span> <span class="hljs-variable">icon</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br>        <span class="hljs-type">boolean</span> <span class="hljs-variable">var8</span> <span class="hljs-operator">=</span> <span class="hljs-literal">false</span>;<br>        <span class="hljs-keyword">if</span> (table != <span class="hljs-literal">null</span>) &#123;<br>            <span class="hljs-type">JTableHeader</span> <span class="hljs-variable">header</span> <span class="hljs-operator">=</span> table.getTableHeader();<br>            <span class="hljs-keyword">if</span> (header != <span class="hljs-literal">null</span>) &#123;<br>                <span class="hljs-type">Color</span> <span class="hljs-variable">var10</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br>                <span class="hljs-type">Color</span> <span class="hljs-variable">var11</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br>                <span class="hljs-keyword">if</span> (hasFocus) &#123;<br>                    var10 = DefaultLookup.getColor(<span class="hljs-built_in">this</span>, <span class="hljs-built_in">this</span>.ui, <span class="hljs-string">&quot;TableHeader.focusCellForeground&quot;</span>);<br>                    var11 = DefaultLookup.getColor(<span class="hljs-built_in">this</span>, <span class="hljs-built_in">this</span>.ui, <span class="hljs-string">&quot;TableHeader.focusCellBackground&quot;</span>);<br>                &#125;<br><br>                <span class="hljs-keyword">if</span> (var10 == <span class="hljs-literal">null</span>) &#123;<br>                    var10 = header.getForeground();<br>                &#125;<br><br>                <span class="hljs-keyword">if</span> (var11 == <span class="hljs-literal">null</span>) &#123;<br>                    var11 = header.getBackground();<br>                &#125;<br><br>                <span class="hljs-built_in">this</span>.setForeground(var10);<br>                <span class="hljs-built_in">this</span>.setBackground(var11);<br>                <span class="hljs-built_in">this</span>.setFont(header.getFont());<br>                var8 = header.isPaintingForPrint();<br>            &#125;<br><br>            <span class="hljs-keyword">if</span> (!var8 &amp;&amp; table.getRowSorter() != <span class="hljs-literal">null</span>) &#123;<br>                <span class="hljs-keyword">if</span> (!<span class="hljs-built_in">this</span>.horizontalTextPositionSet) &#123;<br>                    <span class="hljs-built_in">this</span>.setHorizontalTextPosition(<span class="hljs-number">10</span>);<br>                &#125;<br><br>                <span class="hljs-type">SortOrder</span> <span class="hljs-variable">var12</span> <span class="hljs-operator">=</span> getColumnSortOrder(table, column);<br>                <span class="hljs-keyword">if</span> (var12 != <span class="hljs-literal">null</span>) &#123;<br>                    <span class="hljs-keyword">switch</span>(var12) &#123;<br>                        <span class="hljs-keyword">case</span> ASCENDING:<br>                            icon = DefaultLookup.getIcon(<span class="hljs-built_in">this</span>, <span class="hljs-built_in">this</span>.ui, <span class="hljs-string">&quot;Table.ascendingSortIcon&quot;</span>);<br>                            <span class="hljs-keyword">break</span>;<br>                        <span class="hljs-keyword">case</span> DESCENDING:<br>                            icon = DefaultLookup.getIcon(<span class="hljs-built_in">this</span>, <span class="hljs-built_in">this</span>.ui, <span class="hljs-string">&quot;Table.descendingSortIcon&quot;</span>);<br>                            <span class="hljs-keyword">break</span>;<br>                        <span class="hljs-keyword">case</span> UNSORTED:<br>                            icon = DefaultLookup.getIcon(<span class="hljs-built_in">this</span>, <span class="hljs-built_in">this</span>.ui, <span class="hljs-string">&quot;Table.naturalSortIcon&quot;</span>);<br>                    &#125;<br>                &#125;<br>            &#125;<br>        &#125;<br><br>        <span class="hljs-built_in">this</span>.setText(value == <span class="hljs-literal">null</span> ? <span class="hljs-string">&quot;&quot;</span> : value.toString());<br>        <span class="hljs-built_in">this</span>.setIcon(icon);<br>        <span class="hljs-built_in">this</span>.sortArrow = icon;<br>        <span class="hljs-type">Border</span> <span class="hljs-variable">var13</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br>        <span class="hljs-keyword">if</span> (hasFocus) &#123;<br>            var13 = DefaultLookup.getBorder(<span class="hljs-built_in">this</span>, <span class="hljs-built_in">this</span>.ui, <span class="hljs-string">&quot;TableHeader.focusCellBorder&quot;</span>);<br>        &#125;<br><br>        <span class="hljs-keyword">if</span> (var13 == <span class="hljs-literal">null</span>) &#123;<br>            var13 = DefaultLookup.getBorder(<span class="hljs-built_in">this</span>, <span class="hljs-built_in">this</span>.ui, <span class="hljs-string">&quot;TableHeader.cellBorder&quot;</span>);<br>        &#125;<br><br>        <span class="hljs-built_in">this</span>.setBorder(var13);<br>        <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>;<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> SortOrder <span class="hljs-title function_">getColumnSortOrder</span><span class="hljs-params">(JTable table, <span class="hljs-type">int</span> columnIndex)</span> &#123;<br>        <span class="hljs-type">SortOrder</span> <span class="hljs-variable">sortOrder</span> <span class="hljs-operator">=</span> <span class="hljs-literal">null</span>;<br>        <span class="hljs-keyword">if</span> (table != <span class="hljs-literal">null</span> &amp;&amp; table.getRowSorter() != <span class="hljs-literal">null</span>) &#123;<br>            <span class="hljs-type">List</span> <span class="hljs-variable">sortKeys</span> <span class="hljs-operator">=</span> table.getRowSorter().getSortKeys();<br>            columnIndex = table.convertColumnIndexToModel(columnIndex);<br>            <span class="hljs-keyword">if</span> (sortKeys.size() &gt; <span class="hljs-number">0</span>) &#123;<br>                <span class="hljs-keyword">for</span>(Object sortKey:sortKeys)&#123;<br>                    <span class="hljs-keyword">if</span>(columnIndex == ((RowSorter.SortKey)sortKey).getColumn())&#123;<br>                        sortOrder = ((RowSorter.SortKey)sortKey).getSortOrder();<br>                        <span class="hljs-keyword">break</span>;<br>                    &#125;<br>                &#125;<br>            &#125;<br>            <span class="hljs-keyword">return</span> sortOrder;<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            <span class="hljs-keyword">return</span> sortOrder;<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">paintComponent</span><span class="hljs-params">(Graphics var1)</span> &#123;<br>        <span class="hljs-comment">// 若配置TableHeader.rightAlignSortArrow为true，表头单元格里的箭头将居右显示</span><br>        <span class="hljs-type">boolean</span> <span class="hljs-variable">var2</span> <span class="hljs-operator">=</span> DefaultLookup.getBoolean(<span class="hljs-built_in">this</span>, <span class="hljs-built_in">this</span>.ui, <span class="hljs-string">&quot;TableHeader.rightAlignSortArrow&quot;</span>, <span class="hljs-literal">false</span>);<br>        <span class="hljs-keyword">if</span> (var2 &amp;&amp; <span class="hljs-built_in">this</span>.sortArrow != <span class="hljs-literal">null</span>) &#123;<br>            <span class="hljs-built_in">this</span>.emptyIcon.width = <span class="hljs-built_in">this</span>.sortArrow.getIconWidth();<br>            <span class="hljs-built_in">this</span>.emptyIcon.height = <span class="hljs-built_in">this</span>.sortArrow.getIconHeight();<br>            <span class="hljs-built_in">this</span>.setIcon(<span class="hljs-built_in">this</span>.emptyIcon);<br>            <span class="hljs-built_in">super</span>.paintComponent(var1);<br>            <span class="hljs-type">Point</span> <span class="hljs-variable">var3</span> <span class="hljs-operator">=</span> <span class="hljs-built_in">this</span>.computeIconPosition(var1);<br>            <span class="hljs-built_in">this</span>.sortArrow.paintIcon(<span class="hljs-built_in">this</span>, var1, var3.x, var3.y);<br>        &#125; <span class="hljs-keyword">else</span> &#123;<br>            <span class="hljs-built_in">super</span>.paintComponent(var1);<br>        &#125;<br><br>    &#125;<br><br>    <span class="hljs-keyword">private</span> Point <span class="hljs-title function_">computeIconPosition</span><span class="hljs-params">(Graphics var1)</span> &#123;<br>        <span class="hljs-type">FontMetrics</span> <span class="hljs-variable">var2</span> <span class="hljs-operator">=</span> var1.getFontMetrics();<br>        <span class="hljs-type">Rectangle</span> <span class="hljs-variable">var3</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Rectangle</span>();<br>        <span class="hljs-type">Rectangle</span> <span class="hljs-variable">var4</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Rectangle</span>();<br>        <span class="hljs-type">Rectangle</span> <span class="hljs-variable">var5</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Rectangle</span>();<br>        <span class="hljs-type">Insets</span> <span class="hljs-variable">var6</span> <span class="hljs-operator">=</span> <span class="hljs-built_in">this</span>.getInsets();<br>        var3.x = var6.left;<br>        var3.y = var6.top;<br>        var3.width = <span class="hljs-built_in">this</span>.getWidth() - (var6.left + var6.right);<br>        var3.height = <span class="hljs-built_in">this</span>.getHeight() - (var6.top + var6.bottom);<br>        SwingUtilities.layoutCompoundLabel(<span class="hljs-built_in">this</span>, var2, <span class="hljs-built_in">this</span>.getText(), <span class="hljs-built_in">this</span>.sortArrow, <span class="hljs-built_in">this</span>.getVerticalAlignment(), <span class="hljs-built_in">this</span>.getHorizontalAlignment(), <span class="hljs-built_in">this</span>.getVerticalTextPosition(), <span class="hljs-built_in">this</span>.getHorizontalTextPosition(), var3, var5, var4, <span class="hljs-built_in">this</span>.getIconTextGap());<br>        <span class="hljs-type">int</span> <span class="hljs-variable">var7</span> <span class="hljs-operator">=</span> <span class="hljs-built_in">this</span>.getWidth() - var6.right - <span class="hljs-built_in">this</span>.sortArrow.getIconWidth();<br>        <span class="hljs-type">int</span> <span class="hljs-variable">var8</span> <span class="hljs-operator">=</span> var5.y;<br>        <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Point</span>(var7, var8);<br>    &#125;<br><br>    <span class="hljs-keyword">private</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">EmptyIcon</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">Icon</span>, Serializable &#123;<br>        <span class="hljs-type">int</span> width;<br>        <span class="hljs-type">int</span> height;<br><br>        <span class="hljs-keyword">private</span> <span class="hljs-title function_">EmptyIcon</span><span class="hljs-params">()</span> &#123;<br>            <span class="hljs-built_in">this</span>.width = <span class="hljs-number">0</span>;<br>            <span class="hljs-built_in">this</span>.height = <span class="hljs-number">0</span>;<br>        &#125;<br><br>        <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">paintIcon</span><span class="hljs-params">(Component var1, Graphics var2, <span class="hljs-type">int</span> var3, <span class="hljs-type">int</span> var4)</span> &#123;<br>        &#125;<br><br>        <span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">getIconWidth</span><span class="hljs-params">()</span> &#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.width;<br>        &#125;<br><br>        <span class="hljs-keyword">public</span> <span class="hljs-type">int</span> <span class="hljs-title function_">getIconHeight</span><span class="hljs-params">()</span> &#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-built_in">this</span>.height;<br>        &#125;<br>    &#125;<br>&#125;<br><br></code></pre></div></td></tr></table></figure>
+
+
+<p>运行效果：<br><img src="demo.png" srcset="/img/loading.gif" lazyload alt="demo.png"></p>
+<p>图中以第0列为主排序列，第1列为次排序列进行排序。（若需要实现通过显示1、2、3表明主排序列和次排序列，重写<code>Renderer</code>的<code>getTableCellRendererComponent</code>方法）</p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/Java/">Java</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2020/03/10/python-aiohttp-practice-note/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Python aiohttp模块使用笔记</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2019/11/15/burpsuite-python-extension-code-env/">
+                        <span class="hidden-mobile">Burpsuite Python插件开发 - 编程环境篇</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments" lazyload>
+                
+                  
+                
+                
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'Ovi3/Ovi3.github.io');
+      s.setAttribute('issue-term', 'title');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+  <div class="statistics">
+    
+    
+
+    
+      
+        <!-- 不蒜子统计PV -->
+        <span id="busuanzi_container_site_pv" style="display: none">
+            总访问量 
+            <span id="busuanzi_value_site_pv"></span>
+             次
+          </span>
+      
+      
+        <!-- 不蒜子统计UV -->
+        <span id="busuanzi_container_site_uv" style="display: none">
+            总访客数 
+            <span id="busuanzi_value_site_uv"></span>
+             人
+          </span>
+      
+    
+  </div>
+
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js" ></script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+<script>
+
+function observeAndDisplay(sourceId, targetId) {
+  if (document.getElementById(sourceId)) {
+    new MutationObserver(m => {
+      m.forEach(m => {
+        if (m.target.textContent.trim() !== '') {
+          document.getElementById(targetId).style.display = 'inline';
+        }
+      });
+    })
+      .observe(
+        document.getElementById(sourceId),
+        { childList: true, characterData: true, subtree: true }
+      );
+  }
+
+}
+
+observeAndDisplay('busuanzi_value_page_pv', 'busuanzi_container_page_pv');
+observeAndDisplay('busuanzi_value_site_pv', 'busuanzi_container_site_pv');
+observeAndDisplay('busuanzi_value_site_uv', 'busuanzi_container_site_uv');
+
+
+</script>
+
+  <script defer src="https://cn.vercount.one/js?i=/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

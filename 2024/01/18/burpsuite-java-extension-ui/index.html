@@ -1,0 +1,654 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;dark&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/shinchan.png">
+  <link rel="icon" href="/img/shinchan.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="Ovie博客,Ovi3博客">
+  <meta name="author" content="Ovie">
+  <meta name="keywords" content="Ovie博客,Ovi3博客,个人博客,技术分享,网络安全,安全研发,安全研究,渗透测试">
+  <meta name="google-site-verification" content="eW4bY2KPHT_B6-DOYCuxmzwdjlQ34WXHQ4X3G__8cKY" />
+  
+  <title>Burpsuite Java插件开发 - UI篇 - Ovie博客</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.7.2/styles/vs2015.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"ovi3.github.io","root":"/","version":"1.8.11","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.2"><link rel="alternate" href="/atom.xml" title="Ovie博客" type="application/atom+xml">
+<link rel="alternate" href="/rss2.xml" title="Ovie博客" type="application/rss+xml">
+</head>
+
+
+<body>
+  <header style="height: 60vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Ovie</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/atom.xml">
+                <i class="iconfont icon-rss-fill"></i>
+                 
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('https://api.boxmoe.com/random.php?3') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="Burpsuite Java插件开发 - UI篇">
+              
+                Burpsuite Java插件开发 - UI篇
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2024-01-18 00:06" pubdate>
+        2024年1月18日 凌晨
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      3.4k 字
+    </span>
+  
+
+  
+
+  
+  
+    
+      <!-- 不蒜子统计文章PV -->
+      <span id="busuanzi_container_page_pv" style="display: none">
+        <i class="iconfont icon-eye" aria-hidden="true"></i>
+        <span id="busuanzi_value_page_pv"></span> 次
+      </span>
+    
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Burpsuite Java插件开发 - UI篇</h1>
+            
+            <div class="markdown-body">
+              <p>对我来说，编写UI是件比较烦的事。要调布局、大小、边界、颜色之类的，调半天，界面看起来才好看点。有时还遇到组件缩成一团或字显示不全的bug，实在烦。</p>
+<p>编写BP插件的UI，除了BurpSuite提供的几个UI API，其余的就是Java Swing知识了。</p>
+<h2 id="BurpSuite提供的UI-API"><a href="#BurpSuite提供的UI-API" class="headerlink" title="BurpSuite提供的UI API"></a>BurpSuite提供的UI API</h2><h3 id="ITAB-和-IMessageEditor"><a href="#ITAB-和-IMessageEditor" class="headerlink" title="ITAB 和 IMessageEditor"></a>ITAB 和 IMessageEditor</h3><p>官方示例 <a target="_blank" rel="noopener" href="https://github.com/PortSwigger/custom-logger/tree/master/java">CustomLogger</a> 插件，用于记录HTTP请求响应，点击对应项显示其请求包和响应包。 该插件用到了 <code>ITAB</code> 和 <code>IMessageEditor</code>这两个Burp提供的UI组件，其运行效果是：</p>
+<p><img src="burpsuite-java-extension-ui-1.png" srcset="/img/loading.gif" lazyload alt="burpsuite-java-extension-ui-1.png"></p>
+<p>看下官方的示例代码，再自己运行一下插件，就可以知道这两个UI组件是做什么的。</p>
+<ul>
+<li><code>IMessageEditor</code>：通过调用<code>IBurpExtenderCallbacks</code>对象的<code>IMessageEditor createMessageEditor(IMessageEditorController controller, boolean editable)</code>方法来创建。一般创建两个<code>IMessageEditor</code>，一个用于显示请求包，一个显示响应包，跟BurpSuite Proxy面板提供的那样。<code>IMessageEditor</code>组件还需要跟<code>IMessageEditorController</code>类一起使用，该类用于返回要展示的HTTP请求和响应信息。</li>
+<li><code>ITAB</code>：在burp顶栏多一项TAB，点击TAB标题显示自己设置的面板。通过调用 <code>IBurpExtenderCallbacks</code>对象的<code>void addSuiteTab(ITab tab)</code> 方法添加TAB。</li>
+</ul>
+<h3 id="IMessageEditorTab-和-ITextEditor"><a href="#IMessageEditorTab-和-ITextEditor" class="headerlink" title="IMessageEditorTab 和 ITextEditor"></a>IMessageEditorTab 和 ITextEditor</h3><p>官方示例 <a target="_blank" rel="noopener" href="https://github.com/PortSwigger/example-custom-editor-tab/tree/master/java">CustomEditorTab</a> 插件，在<code>IMessageEditor</code>组件里添加一个TAB页，用于显示请求包里data参数值的base64解码结果。该插件用到了 <code>IMessageEditorTab</code> 和 <code>ITextEditor</code>。其运行效果是：</p>
+<p><img src="burpsuite-java-extension-ui-2.png" srcset="/img/loading.gif" lazyload alt="burpsuite-java-extension-ui-2.png"></p>
+<ul>
+<li><p><code>ITextEditor</code>：一个文本显示、编辑组件，比Java Swing内置的JTextArea文本框组件多了一些功能。支持搜索，显示行号。可通过<code>IBurpExtenderCallbacks</code>对象的<code>createTextEditor()</code>方法创建。</p>
+</li>
+<li><p><code>IMessageEditorTab</code>：在<code>IMessageEditor</code>组件里的TAB页。通过实现<code>IMessageEditorTabFactory</code>接口的<code>IMessageEditorTab createNewInstance(IMessageEditorController controller, boolean editable)</code>方法，该方法返回一个<code>IMessageEditorTab</code>对象，再通过调用<code>IBurpExtenderCallbacks</code>对象的<code>void registerMessageEditorTabFactory(IMessageEditorTabFactory factory)</code> 注册<code>IMessageEditorTabFactory</code>对象，就实现了在<code>IMessageEditor</code>组件里添加一个TAB页（这段话有点绕，看代码清晰些）。<code>IMessageEditorTab</code>接口的几个方法：</p>
+<ul>
+<li><p><code>void setMessage(byte[] content, boolean isRequest)</code>：在点击该TAB时调用。 content参数为原请求（Origin Request）或原响应（Origin Response）的完整数据。通常在这个方法里设置该TAB组件里的内容。</p>
+</li>
+<li><p><code>byte[] getMessage()</code>：返回值会覆盖原请求或响应内容。该方法里通常用于当用户修改了该TAB内的内容后，修改原请求或原响应的内容。</p>
+</li>
+<li><p><code>byte[] getSelectedData()</code>：返回当前用户所选择的数据，在该TAB里按Ctrl+C复制时调用；若返回null，则在该TAB按Ctrl + C复制的是整个包的内容。</p>
+</li>
+<li><p><code>boolean isModified()</code>：在点击该TAB后点击其它TAB时调用。返回true时，burp才会调用<code>byte[] getMessage()</code>方法。 若不想修改原请求或响应体的内容则返回false。</p>
+</li>
+<li><p><code>java.lang.String getTabCaption()</code>：返回TAB标题名</p>
+</li>
+<li><p><code>java.awt.Component getUiComponent()</code>：返回该TAB的UI组件</p>
+</li>
+<li><p><code>boolean isEnabled(byte[] content, boolean isRequest)</code>：是否显示该TAB。</p>
+<p>Burp对<code>IMessageEditorTab</code>的几个方法的调用顺序是：</p>
+</li>
+</ul>
+<ol>
+<li>点击一个请求响应项显示<code>IMessageEditor</code>组件后，依次调用： <code>isEnabled -&gt; getUiComponent -&gt; getTabCaption</code>。 </li>
+<li>再点击插件注册的TAB时，调用： <code>setMessage</code></li>
+<li>再点到其他TAB时，依次调用：<code>isModified -&gt; getMessage</code></li>
+</ol>
+</li>
+</ul>
+<h3 id="IContextMenuFactory"><a href="#IContextMenuFactory" class="headerlink" title="IContextMenuFactory"></a>IContextMenuFactory</h3><p>使用<code>IContextMenuFactory</code>添加右键插件菜单。写了个示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">package</span> burp;<br><br><span class="hljs-keyword">import</span> javax.swing.*;<br><span class="hljs-keyword">import</span> java.util.ArrayList;<br><span class="hljs-keyword">import</span> java.util.List;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">BurpExtender</span> <span class="hljs-keyword">implements</span> <span class="hljs-title class_">IBurpExtender</span>, IContextMenuFactory<br>&#123;<br>    <span class="hljs-keyword">private</span> IBurpExtenderCallbacks callbacks;<br>    <span class="hljs-keyword">private</span> IExtensionHelpers helpers;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">registerExtenderCallbacks</span><span class="hljs-params">(IBurpExtenderCallbacks callbacks)</span><br>    &#123;<br>        <span class="hljs-comment">// keep a reference to our callbacks object</span><br>        <span class="hljs-built_in">this</span>.callbacks = callbacks;<br><br>        <span class="hljs-comment">// obtain an extension helpers object</span><br>        helpers = callbacks.getHelpers();<br><br>        <span class="hljs-comment">// set our extension name</span><br>        callbacks.setExtensionName(<span class="hljs-string">&quot;MenuTest&quot;</span>);<br><br>        callbacks.registerContextMenuFactory(BurpExtender.<span class="hljs-built_in">this</span>);<br><br>    &#125;<br><br>    <span class="hljs-meta">@Override</span><br>    <span class="hljs-keyword">public</span> List&lt;JMenuItem&gt; <span class="hljs-title function_">createMenuItems</span><span class="hljs-params">(IContextMenuInvocation invocation)</span> &#123;<br>        List&lt;JMenuItem&gt; listMenuItems = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayList</span>&lt;&gt;();<br><br>        <span class="hljs-type">JMenuItem</span> <span class="hljs-variable">menuItem</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JMenuItem</span>(<span class="hljs-string">&quot;Sent to MenuTest&quot;</span>);<br>        menuItem.addActionListener(e -&gt; &#123;<br>            IHttpRequestResponse[] reqs = invocation.getSelectedMessages();<br>            <span class="hljs-type">StringBuilder</span> <span class="hljs-variable">sb</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">StringBuilder</span>();<br>            sb.append(<span class="hljs-string">&quot;what we get:\n&quot;</span>);<br>            <span class="hljs-keyword">for</span> (IHttpRequestResponse req : reqs) &#123;<br>                sb.append(<span class="hljs-string">&quot; - &quot;</span>);<br>                sb.append(helpers.analyzeRequest(req).getMethod());<br>                sb.append(<span class="hljs-string">&quot; &quot;</span>);<br>                sb.append(helpers.analyzeRequest(req).getUrl());<br>                sb.append(<span class="hljs-string">&quot;\n&quot;</span>);<br>            &#125;<br>            callbacks.printOutput(sb.toString());<br>        &#125;);<br><br>        listMenuItems.add(menuItem);<br><br>        <span class="hljs-keyword">return</span> listMenuItems;<br>    &#125;<br>&#125;<br></code></pre></div></td></tr></table></figure>
+
+<p>运行效果：</p>
+<p><img src="burpsuite-java-extension-ui-3.png" srcset="/img/loading.gif" lazyload alt="burpsuite-java-extension-ui-3"></p>
+<p>给Burp右键插件菜单添加了一项<code>Send to MenuTest</code>菜单。</p>
+<p>关键是实现<code>IContextMenuFactory</code>接口的<code>List&lt;JMenuItem&gt; createMenuItems(IContextMenuInvocation invocation)</code>方法。每次在<code>Proxy</code>、<code>Repeater</code>、<code>Issue Activity</code>等面板点击鼠标右键的时候就会调用一次该方法。</p>
+<p>可以通过调用<code>invocation</code>参数的<code>int getToolFlag()</code>方法获取<code>toolFlag</code>，判断用户在哪里右键的。如：</p>
+<ul>
+<li>在<code>Dashboard - Issue activiy</code>的<code>issue</code>列表右键，<code>toolFlag</code>值为 <code>IBurpExtenderCallbacks.TOOL_SUITE</code></li>
+<li>在<code>Dashboard - Issue activiy</code>下方的<code>Request</code>和<code>Response</code>栏右键，则是<code>IBurpExtenderCallbacks.TOOL_SCANNER</code></li>
+<li>在<code>Target - Contents</code>右键，是<code>IBurpExtenderCallbacks.TOOL_TARGET</code></li>
+<li>在<code>Target - Issues</code>的<code>issue</code>列表和其下方的<code>Request</code>和<code>Response</code>栏右键，是 <code>IBurpExtenderCallbacks.TOOL_SCANNER</code>。</li>
+<li><code>toolFlag</code>的可能值还有<code>IBurpExtenderCallbacks.TOOL_REPEATER</code>， <code>IBurpExtenderCallbacks.TOOL_PROXY</code>等，可自行翻API文档看下。</li>
+</ul>
+<p>也可以通过调用<code>invocation</code>参数的<code>byte getInvocationContext()</code>方法来判断用户在哪里右键的。</p>
+<h2 id="UI辅助工具"><a href="#UI辅助工具" class="headerlink" title="UI辅助工具"></a>UI辅助工具</h2><p>使用UI辅助工具拖动组件绘制UI界面，项目编译时工具会将UI定义文件转为java代码。</p>
+<p>由于编写Java主程序跟BP插件之间还有些不同，前者直接编译运行，后者是编译生成jar包后再通过BP去加载，加上辅助工具生成的代码不够灵活，所以开发时并没有使用这类辅助工具，只在前期学习Java Swing布局时尝试了下。</p>
+<p>IDEA自带一个GUI Form工具。也有一个第三方的JFormDesigner插件，比GUI Form更强大，需要购买，或者30天的试用。</p>
+<p>使用GUI Form工具将UI定义文件转为java代码：</p>
+<ol>
+<li>在IDEA新建一个UI定义文件，即<code>form</code>文件：<code>右键 -&gt; New -&gt; Swing UI Designer -&gt; GUI Form</code>，</li>
+<li>修改IDEA配置：点击<code>File -&gt; Settings -&gt; Editor -&gt; GUI Designer</code>，选择<code>Java source code</code>（即将GUI Form编译为Java代码。默认是<code>Binary class files</code>，即编译为class字节码）。</li>
+<li>点击<code>Build -&gt; Build Project</code>，在<code>form</code>文件所在的目录对应的<code>java</code>文件就能看到GUI Form生成的java代码。</li>
+</ol>
+<p>需要注意的是：</p>
+<ol>
+<li>GUI Form不支持BoxLayout、GroupLayout布局</li>
+<li>HSpacer和VSpacer组件是IDEA提供的，不是swing库提供的。所以要写BP插件，还不好使用到这两个组件。</li>
+</ol>
+<p>即使辅助工具方便了UI编写，但有时将组件拖来拖去也弄不出想要的效果， 得了解一些布局的知识。</p>
+<h2 id="Java-Swing-布局"><a href="#Java-Swing-布局" class="headerlink" title="Java Swing 布局"></a>Java Swing 布局</h2><p>官方文档： <a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/tutorial/uiswing/layout/index.html">https://docs.oracle.com/javase/tutorial/uiswing/layout/index.html</a> ， 官方提供的布局有8个，还可以实现自己的布局管理器。编写BP插件的UI，主要是展示数据页面和配置页面，常用的布局就三个：BorderLayout， BoxLayout，GridBagLayout。</p>
+<h3 id="BorderLayout布局"><a href="#BorderLayout布局" class="headerlink" title="BorderLayout布局"></a><strong>BorderLayout布局</strong></h3><p>BorderLayout布局分为五个区域：上、下、左、右和中间。</p>
+<ul>
+<li><code>BorderLayout.NORTH</code></li>
+<li><code>BorderLayout.SOUTH</code></li>
+<li><code>BorderLayout.WEST</code></li>
+<li><code>BorderLayout.EAST</code></li>
+<li><code>BorderLayout.CENTER</code></li>
+</ul>
+<p>当窗口扩大时中间区域将尽可能获取更多空间，而其它区域只是占用它们需要的大小，当窗口缩小时，优先缩小的也是中间区域。一般用到该布局时，只用到中间区域（如：只放一个组件在中间区域，它尽可能占满窗口）或中间区域加上另一个区域（如：上区域放一个搜索框，中间区域放搜索结果； 中间区域放信息，下区域放“确定”，”取消“按钮）。</p>
+<p>示例代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">package</span> org.example.blog;<br><br><span class="hljs-keyword">import</span> javax.swing.*;<br><span class="hljs-keyword">import</span> java.awt.*;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">BorderLayoutDemo</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        javax.swing.SwingUtilities.invokeLater(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Runnable</span>() &#123;<br>            <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>                <span class="hljs-type">JFrame</span> <span class="hljs-variable">frame</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JFrame</span>(<span class="hljs-string">&quot;BorderLayoutDemo&quot;</span>);<br><br>                <span class="hljs-type">JPanel</span> <span class="hljs-variable">contentPane</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JPanel</span>();<br>                contentPane.setLayout(<span class="hljs-keyword">new</span> <span class="hljs-title class_">BorderLayout</span>());<br><br>                <span class="hljs-type">JTextField</span> <span class="hljs-variable">textField</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JTextField</span>();<br>                textField.setPreferredSize(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Dimension</span>( textField.getPreferredSize().width, <span class="hljs-number">30</span>));<br>                textField.setBackground(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Color</span>(<span class="hljs-number">0xAA</span>, <span class="hljs-number">0xD9</span>, <span class="hljs-number">0xBB</span>));<br>                contentPane.add(textField, BorderLayout.NORTH);<br><br>                <span class="hljs-type">JTextArea</span> <span class="hljs-variable">textArea</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JTextArea</span>(<span class="hljs-number">20</span>, <span class="hljs-number">50</span>);<br>                textArea.setBackground(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Color</span>(<span class="hljs-number">0x80</span>, <span class="hljs-number">0xBC</span>, <span class="hljs-number">0xBD</span>));<br>                contentPane.add(textArea, BorderLayout.CENTER);<br><br>                frame.setContentPane(contentPane);<br>                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);<br>                frame.pack();<br>                frame.setVisible(<span class="hljs-literal">true</span>);<br>            &#125;<br>        &#125;);<br>    &#125;<br>&#125;<br></code></pre></div></td></tr></table></figure>
+
+<p>效果：</p>
+<p><img src="burpsuite-java-extension-ui-4.png" srcset="/img/loading.gif" lazyload alt="burpsuite-java-extension-ui-4"></p>
+<p>还有几点说明：</p>
+<ol>
+<li>若要设置四周几个块里组件的大小，不能使用<code>setMinimumSize</code>方法，要用<code>setPreferredSize</code>方法。</li>
+<li>该布局没有提供设置每个区域之间间隔的方法。</li>
+</ol>
+<h3 id="BoxLayout布局"><a href="#BoxLayout布局" class="headerlink" title="BoxLayout布局"></a><strong>BoxLayout布局</strong></h3><p>BoxLayout布局是将组件沿着X轴（<code>BoxLayout.X_AXIS</code>）或Y轴（<code>BoxLayout.Y_AXIS</code>）放，可设置组件的对齐方式，如沿着Y轴放时，设置以组件的左侧或中轴线来对齐等。</p>
+<p>通常想要组件沿着一个方向排列，只考虑一个方向上组件对齐，不考虑水平和垂直方法上都对齐时，则用BoxLayout。</p>
+<p>示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">package</span> org.example.blog;<br><br><span class="hljs-keyword">import</span> javax.swing.*;<br><span class="hljs-keyword">import</span> javax.swing.border.EmptyBorder;<br><span class="hljs-keyword">import</span> java.awt.*;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">BoxLayoutDemo</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        javax.swing.SwingUtilities.invokeLater(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Runnable</span>() &#123;<br>            <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>                <span class="hljs-type">JFrame</span> <span class="hljs-variable">frame</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JFrame</span>(<span class="hljs-string">&quot;BoxLayoutDemo&quot;</span>);<br><br>                <span class="hljs-type">JPanel</span> <span class="hljs-variable">contentPane</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JPanel</span>();<br>                contentPane.setLayout(<span class="hljs-keyword">new</span> <span class="hljs-title class_">BoxLayout</span>(contentPane, BoxLayout.X_AXIS));<br>                contentPane.setBorder(<span class="hljs-keyword">new</span> <span class="hljs-title class_">EmptyBorder</span>(<span class="hljs-number">5</span>, <span class="hljs-number">5</span>, <span class="hljs-number">5</span>, <span class="hljs-number">5</span>));<br>                contentPane.add(Box.createHorizontalGlue());<br>                contentPane.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">JButton</span>(<span class="hljs-string">&quot;确认&quot;</span>));<br>                contentPane.add(Box.createHorizontalStrut(<span class="hljs-number">5</span>));<br>                contentPane.add(<span class="hljs-keyword">new</span> <span class="hljs-title class_">JButton</span>(<span class="hljs-string">&quot;取消&quot;</span>));<br><br>                contentPane.setPreferredSize(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Dimension</span>(<span class="hljs-number">560</span>, contentPane.getPreferredSize().height));<br>                frame.setContentPane(contentPane);<br>                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);<br>                frame.pack();<br>                frame.setVisible(<span class="hljs-literal">true</span>);<br>            &#125;<br>        &#125;);<br>    &#125;<br><br>&#125;<br><br></code></pre></div></td></tr></table></figure>
+
+<p>效果：</p>
+<p><img src="burpsuite-java-extension-ui-5.png" srcset="/img/loading.gif" lazyload alt="burpsuite-java-extension-ui-5"></p>
+<p>说明：</p>
+<ol>
+<li>BoxLayout布局里每个组件都是靠在一起的，如果要在组件之间有空隙，可以添加不可见组件（空白组件）：<ul>
+<li>Rigid Area，固定大小的空白组件。<code>Box.createRigidArea(new Dimension(5,0))</code>。</li>
+<li>Glue，伸展出去的空白组件。沿水平方向伸展：<code>Box.createHorizontalGlue()</code>，沿垂直方向伸展：<code>Box.createVerticalGlue()</code></li>
+</ul>
+</li>
+<li>BoxLayout布局会考虑到组件的最小、期望、最大大小。通过调用组件的<code>setXxxSize</code>方法（这些方法定义在JComponnet类）来设置：<ul>
+<li><code>comp.setMinimumSize(new Dimension(50, 25))</code>：设置最小大小</li>
+<li><code>comp.setPreferredSize(new Dimension(50, 25))</code>：设置期望大小</li>
+<li><code>comp.setMaximumSize(new Dimension(300, 300))</code>：设置最大大小，让组件大小不随着窗口放大而改变，或者不让它默认延展到最大</li>
+</ul>
+</li>
+<li>Windows下，PowerToys工具的屏幕标尺可以测量宽高， snipaste截图工具也可以</li>
+<li>设置布局里组件的对齐方式：通过调用各个组件的<code>setAlignmentX</code>方法和<code>setAlignmentY</code>方法来设置。</li>
+</ol>
+<h3 id="GridBagLayout布局"><a href="#GridBagLayout布局" class="headerlink" title="GridBagLayout布局"></a><strong>GridBagLayout布局</strong></h3><p>GridBagLayout布局将组件放在单元格里，每个组件占用一个或多个单元格，每一行可以是不同高度，每一列可以是不同宽度。</p>
+<p>编写配置页面UI的时候通常用这个布局，代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs java"><span class="hljs-keyword">package</span> org.example.blog;<br><br><span class="hljs-keyword">import</span> javax.swing.*;<br><span class="hljs-keyword">import</span> javax.swing.border.EmptyBorder;<br><span class="hljs-keyword">import</span> java.awt.*;<br><br><span class="hljs-keyword">public</span> <span class="hljs-keyword">class</span> <span class="hljs-title class_">GridBagLayoutDemo</span> &#123;<br>    <span class="hljs-keyword">public</span> <span class="hljs-keyword">static</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">main</span><span class="hljs-params">(String[] args)</span> &#123;<br>        javax.swing.SwingUtilities.invokeLater(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Runnable</span>() &#123;<br>            <span class="hljs-keyword">public</span> <span class="hljs-keyword">void</span> <span class="hljs-title function_">run</span><span class="hljs-params">()</span> &#123;<br>                <span class="hljs-type">JFrame</span> <span class="hljs-variable">frame</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JFrame</span>(<span class="hljs-string">&quot;GridBagLayoutDemo&quot;</span>);<br><br>                <span class="hljs-type">JPanel</span> <span class="hljs-variable">wrapPane</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JPanel</span>();<br>                wrapPane.setLayout(<span class="hljs-keyword">new</span> <span class="hljs-title class_">BoxLayout</span>(wrapPane, BoxLayout.Y_AXIS));<br>                wrapPane.setBorder(<span class="hljs-keyword">new</span> <span class="hljs-title class_">EmptyBorder</span>(<span class="hljs-number">5</span>, <span class="hljs-number">5</span>, <span class="hljs-number">5</span>, <span class="hljs-number">5</span>));<br>                <span class="hljs-type">JScrollPane</span> <span class="hljs-variable">contentPane</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JScrollPane</span>(wrapPane);<br>                contentPane.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);<br>                contentPane.getVerticalScrollBar().setUnitIncrement(<span class="hljs-number">30</span>);<br><br>                <span class="hljs-type">JPanel</span> <span class="hljs-variable">settingPanel</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JPanel</span>();<br>                settingPanel.setLayout(<span class="hljs-keyword">new</span> <span class="hljs-title class_">GridBagLayout</span>());<br>                <span class="hljs-type">GridBagConstraints</span> <span class="hljs-variable">constraints</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">GridBagConstraints</span>();<br>                constraints.anchor = GridBagConstraints.WEST;<br>                constraints.fill = GridBagConstraints.NONE;<br>                constraints.insets = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Insets</span>(<span class="hljs-number">5</span>, <span class="hljs-number">5</span>, <span class="hljs-number">5</span>, <span class="hljs-number">5</span>);<br><br>                <span class="hljs-type">JLabel</span> <span class="hljs-variable">urlLabel</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JLabel</span>(<span class="hljs-string">&quot;URL:&quot;</span>);<br>                constraints.gridx = <span class="hljs-number">0</span>;<br>                constraints.gridy = <span class="hljs-number">0</span>;<br>                settingPanel.add(urlLabel, constraints);<br><br>                <span class="hljs-type">JTextField</span> <span class="hljs-variable">urlField</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JTextField</span>();<br>                constraints.gridx = <span class="hljs-number">1</span>;<br>                constraints.weightx = <span class="hljs-number">1.0</span>;<br>                constraints.fill = GridBagConstraints.HORIZONTAL;<br>                settingPanel.add(urlField, constraints);<br><br>                <span class="hljs-type">JLabel</span> <span class="hljs-variable">apiKeyLabel</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JLabel</span>(<span class="hljs-string">&quot;API KEY:&quot;</span>);<br>                constraints.gridx = <span class="hljs-number">0</span>;<br>                constraints.gridy = <span class="hljs-number">1</span>;<br>                constraints.weightx = <span class="hljs-number">0.0</span>;<br>                settingPanel.add(apiKeyLabel, constraints);<br><br>                <span class="hljs-type">JTextField</span> <span class="hljs-variable">apiKeyField</span> <span class="hljs-operator">=</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">JTextField</span>();<br>                constraints.gridx = <span class="hljs-number">1</span>;<br>                constraints.weightx = <span class="hljs-number">1.0</span>;<br>                constraints.fill = GridBagConstraints.HORIZONTAL;<br>                settingPanel.add(apiKeyField, constraints);<br><br>                settingPanel.setAlignmentX(Component.LEFT_ALIGNMENT);<br>                settingPanel.setMaximumSize(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Dimension</span>(<span class="hljs-number">300</span>, settingPanel.getPreferredSize().height));<br>                wrapPane.add(settingPanel);<br><br>                frame.setContentPane(contentPane);<br>                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);<br>                frame.setSize(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Dimension</span>(<span class="hljs-number">600</span>, <span class="hljs-number">360</span>));<br>                frame.setVisible(<span class="hljs-literal">true</span>);<br>            &#125;<br>        &#125;);<br>    &#125;<br>&#125;<br></code></pre></div></td></tr></table></figure>
+
+<p>效果：</p>
+<p><img src="burpsuite-java-extension-ui-6.png" srcset="/img/loading.gif" lazyload alt="burpsuite-java-extension-ui-6"></p>
+<p>说明：</p>
+<p>每次把组件添加到布局时，传递一个<code>GridBagConstraints</code>对象，在该对象里指定将组件放置在哪一行、哪一列，占几行，占几列，是否沿水平方向伸展等。一些<code>GridBagConstraints</code>对象属性 ：</p>
+<ul>
+<li><p><code>gridx</code>：组件的横坐标，即组件在第几列</p>
+</li>
+<li><p><code>gridy</code>：组件的纵坐标，即组件在第几行</p>
+</li>
+<li><p><code>gridwidth</code>：组件所占列数，即宽度，默认为1</p>
+</li>
+<li><p><code>gridheight</code>：组件所占行数，即高度，默认为1</p>
+</li>
+<li><p><code>fill</code>：当组件在其格内而不能占满其格时，通过<code>fill</code>的值来设定填充方式，有四个可选值：<code>GridBagConstraints.NONE</code>（默认），<code>GridBagConstraints.HORIZONTAL</code>，<code>GridBagConstraints.VERTICAL</code>，<code>GridBagConstraints.BOTH</code>。</p>
+</li>
+<li><p><code>weightx</code>：行的权重，通过这个属性来决定如何分配行的剩余空间，默认为0。</p>
+</li>
+<li><p><code>weighty</code>：列的权重，通过这个属性来决定如何分配列的剩余空间，默认为0。</p>
+</li>
+<li><p><code>anchor</code>：当组件比单元格小时，指定将组件放在单元格的哪个位置。有九个可选值：</p>
+  <figure class="highlight asciidoc"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs asciidoc">FIRST<span class="hljs-emphasis">_LINE_START  PAGE_START  FIRST_LINE_END</span><br><span class="hljs-emphasis">LINE_START        CENTER      LINE_END</span><br><span class="hljs-emphasis">LAST_LINE_START   PAGE_END    LAST_LINE_</span>END<br></code></pre></div></td></tr></table></figure>
+</li>
+<li><p><code>ipadx</code>：组件横向内填充，默认为0。（没用过）</p>
+</li>
+<li><p><code>ipady</code>：组件纵向内填充，默认为0。（没用过）</p>
+</li>
+<li><p><code>insets</code>：组件外填充（没用过）</p>
+</li>
+</ul>
+<p>上面只提到我在开发BP插件时一些常用的布局和方法，灵活运用它们，布局里嵌布局，基本可以实现想要的UI布局。 </p>
+<h2 id="Java-Swing组件"><a href="#Java-Swing组件" class="headerlink" title="Java Swing组件"></a>Java Swing组件</h2><p>Java Swing 组件一览 ： <a target="_blank" rel="noopener" href="https://docs.oracle.com/javase/tutorial/uiswing/components/index.html">https://docs.oracle.com/javase/tutorial/uiswing/components/index.html</a> ， 过一遍有什么组件，用到的时候再去看。</p>
+<p>写UI界面基本上就是给组件设置文本、大小，设置监听，但有时候需要丰富组件的功能，如实现一个可以搜索的下拉框，显示Placeholder的文本框，支持撤销重做的文本框等等，可以去问ChatGPT或网上搜搜。如果是再复杂一些的，可能就需要自己实现了。</p>
+<p>附：Burp默认会给组件设置一些样式，如字体，表格颜色，<code>JProgressBar</code>进度条样式（圆角、橙色） 等等。</p>
+<h2 id="灵活操作UI"><a href="#灵活操作UI" class="headerlink" title="灵活操作UI"></a>灵活操作UI</h2><p>Java Swing的UI操作比较灵活，可以有一些”骚操作“，像：</p>
+<ol>
+<li>前段时间我写的小插件 <a target="_blank" rel="noopener" href="https://github.com/Ovi3/burp-menu-level">burp-menu-level</a> ，可以修改Burp右键插件菜单的层级。 （可以在BApp Store插件商店里搜 <code>Change Menu Level</code>，点<code>Install</code>安装）</li>
+<li>支持请求编辑框里自动补全Payload的 <a target="_blank" rel="noopener" href="https://github.com/synacktiv/HopLa">HopLa</a> 插件。原理：通过注册<code>AWTEventListener</code>监听器，在<code>eventDispatched(AWTEvent event)</code>回调方法里获取<code>JTextArea</code>组件，并给<code>JTextArea</code>组件添加监听。</li>
+<li>支持自定义TAB标题图标的 <a target="_blank" rel="noopener" href="https://github.com/irsdl/BurpSuiteSharpenerEx">BurpSuiteSharpenerEx</a> 插件。</li>
+</ol>
+<h2 id="UI参考"><a href="#UI参考" class="headerlink" title="UI参考"></a>UI参考</h2><p>Github上有很多BP插件项目的UI可以参考，这里列几个：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://github.com/vaycore/OneScan">OneScan</a> 的请求响应列表页面（类似BurpSuite Proxy页面），配置页面，它用的是 <a target="_blank" rel="noopener" href="https://github.com/vaycore/OneScan/tree/v1.5.2/src/main/java/burp/vaycore/common/layout">自定义布局</a></li>
+<li><a target="_blank" rel="noopener" href="https://github.com/pmiaowu/BurpShiroPassiveSca">BurpShiroPassiveScan</a> 的请求响应列表页面（类似BurpSuite Proxy页面）</li>
+<li><a target="_blank" rel="noopener" href="https://github.com/gh0stkey/HaE">HaE</a> 的可增删改的表格页面</li>
+</ul>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/Burpsuite/">Burpsuite</a>
+                    
+                      <a class="hover-with-bg" href="/tags/Web%E5%AE%89%E5%85%A8/">Web安全</a>
+                    
+                      <a class="hover-with-bg" href="/tags/Java/">Java</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/03/29/extract-react-router/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">提取React前端路由</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/01/18/burpsuite-java-extension-api/">
+                        <span class="hidden-mobile">Burpsuite Java插件开发 - API篇</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments" lazyload>
+                
+                  
+                
+                
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'Ovi3/Ovi3.github.io');
+      s.setAttribute('issue-term', 'title');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+  <div class="statistics">
+    
+    
+
+    
+      
+        <!-- 不蒜子统计PV -->
+        <span id="busuanzi_container_site_pv" style="display: none">
+            总访问量 
+            <span id="busuanzi_value_site_pv"></span>
+             次
+          </span>
+      
+      
+        <!-- 不蒜子统计UV -->
+        <span id="busuanzi_container_site_uv" style="display: none">
+            总访客数 
+            <span id="busuanzi_value_site_uv"></span>
+             人
+          </span>
+      
+    
+  </div>
+
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js" ></script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+<script>
+
+function observeAndDisplay(sourceId, targetId) {
+  if (document.getElementById(sourceId)) {
+    new MutationObserver(m => {
+      m.forEach(m => {
+        if (m.target.textContent.trim() !== '') {
+          document.getElementById(targetId).style.display = 'inline';
+        }
+      });
+    })
+      .observe(
+        document.getElementById(sourceId),
+        { childList: true, characterData: true, subtree: true }
+      );
+  }
+
+}
+
+observeAndDisplay('busuanzi_value_page_pv', 'busuanzi_container_page_pv');
+observeAndDisplay('busuanzi_value_site_pv', 'busuanzi_container_site_pv');
+observeAndDisplay('busuanzi_value_site_uv', 'busuanzi_container_site_uv');
+
+
+</script>
+
+  <script defer src="https://cn.vercount.one/js?i=/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

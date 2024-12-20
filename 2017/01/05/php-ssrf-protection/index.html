@@ -1,0 +1,518 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;dark&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/shinchan.png">
+  <link rel="icon" href="/img/shinchan.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="Ovie博客,Ovi3博客">
+  <meta name="author" content="Ovie">
+  <meta name="keywords" content="Ovie博客,Ovi3博客,个人博客,技术分享,网络安全,安全研发,安全研究,渗透测试">
+  <meta name="google-site-verification" content="eW4bY2KPHT_B6-DOYCuxmzwdjlQ34WXHQ4X3G__8cKY" />
+  
+  <title>PHP开发中防御SSRF - Ovie博客</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.7.2/styles/vs2015.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"ovi3.github.io","root":"/","version":"1.8.11","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.2"><link rel="alternate" href="/atom.xml" title="Ovie博客" type="application/atom+xml">
+<link rel="alternate" href="/rss2.xml" title="Ovie博客" type="application/rss+xml">
+</head>
+
+
+<body>
+  <header style="height: 60vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Ovie</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/atom.xml">
+                <i class="iconfont icon-rss-fill"></i>
+                 
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('https://api.boxmoe.com/random.php?3') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="PHP开发中防御SSRF">
+              
+                PHP开发中防御SSRF
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2017-01-05 00:52" pubdate>
+        2017年1月5日 凌晨
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      1.4k 字
+    </span>
+  
+
+  
+
+  
+  
+    
+      <!-- 不蒜子统计文章PV -->
+      <span id="busuanzi_container_page_pv" style="display: none">
+        <i class="iconfont icon-eye" aria-hidden="true"></i>
+        <span id="busuanzi_value_page_pv"></span> 次
+      </span>
+    
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">PHP开发中防御SSRF</h1>
+            
+            <div class="markdown-body">
+              <p>参考phith0n的<a target="_blank" rel="noopener" href="https://www.leavesongs.com/PYTHON/defend-ssrf-vulnerable-in-python.html">谈一谈如何在Python开发中拒绝SSRF漏洞</a>，用PHP写一个检测是否是内网URL的函数。</p>
+<p>需要注意的是，我写的这个检测URL的函数并没有考虑到客户端允许重定向跟踪的情况。如果允许重定向跟踪则需要检查每个30x响应包的location字段。</p>
+<figure class="highlight php"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs php"><span class="hljs-meta">&lt;?php</span><br><span class="hljs-comment">/*</span><br><span class="hljs-comment">*  判断是否合法的URL，合法则返回true；</span><br><span class="hljs-comment">*  格式不是http/https协议，或是内网IP，则视为不合法</span><br><span class="hljs-comment">*</span><br><span class="hljs-comment">*  注意：判断是否是内网url的时候并没有检测30X跳转的location响应头部，</span><br><span class="hljs-comment">*  使用此方法时，要求curl或其他工具设置不允许重定向跟踪</span><br><span class="hljs-comment">*</span><br><span class="hljs-comment">*  <span class="hljs-doctag">@author</span> Ovie</span><br><span class="hljs-comment">*  <span class="hljs-doctag">@param</span> string $url</span><br><span class="hljs-comment">*  <span class="hljs-doctag">@return</span> bool</span><br><span class="hljs-comment">*/</span><br><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">is_allowed_URL</span>(<span class="hljs-params"><span class="hljs-variable">$url</span></span>)</span>&#123;<br>    <span class="hljs-comment">//可用来防止HTTP头注入</span><br>  	<span class="hljs-keyword">if</span> (!<span class="hljs-variable">$url</span> || !<span class="hljs-title function_ invoke__">filter_var</span>(<span class="hljs-variable">$url</span>, FILTER_VALIDATE_URL, FILTER_FLAG_PATH_REQUIRED &amp; FILTER_FLAG_HOST_REQUIRED &amp; FILTER_FLAG_QUERY_REQUIRED))&#123;<br>  		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br>  <br>  	<span class="hljs-comment">//仅允许http或https协议</span><br>	<span class="hljs-keyword">if</span>(!<span class="hljs-title function_ invoke__">preg_match</span>(<span class="hljs-string">&#x27;/^https?:\/\/.*$/&#x27;</span>, <span class="hljs-variable">$url</span>))&#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br>	<br>	<span class="hljs-variable">$host</span> = <span class="hljs-title function_ invoke__">parse_url</span>(<span class="hljs-variable">$url</span>, PHP_URL_HOST);<br>	<span class="hljs-keyword">if</span>(!<span class="hljs-variable">$host</span>)&#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br>	<br>	<span class="hljs-variable">$ip</span> = <span class="hljs-title function_ invoke__">gethostbyname</span>(<span class="hljs-variable">$host</span>);<br>	<span class="hljs-variable">$ip</span> = <span class="hljs-title function_ invoke__">ip2long</span>(<span class="hljs-variable">$ip</span>);<br>	<span class="hljs-keyword">if</span>(<span class="hljs-variable">$ip</span> === <span class="hljs-literal">false</span>)&#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br>	<br>	<span class="hljs-variable">$is_inner_ipaddress</span> = <span class="hljs-title function_ invoke__">ip2long</span>(<span class="hljs-string">&#x27;127.0.0.0&#x27;</span>) &gt;&gt; <span class="hljs-number">24</span> == <span class="hljs-variable">$ip</span> &gt;&gt; <span class="hljs-number">24</span> <span class="hljs-keyword">or</span> <br>		<span class="hljs-title function_ invoke__">ip2long</span>(<span class="hljs-string">&#x27;10.0.0.0&#x27;</span>) &gt;&gt; <span class="hljs-number">24</span> == <span class="hljs-variable">$ip</span> &gt;&gt; <span class="hljs-number">24</span> <span class="hljs-keyword">or</span> <br>		<span class="hljs-title function_ invoke__">ip2long</span>(<span class="hljs-string">&#x27;172.16.0.0&#x27;</span>) &gt;&gt; <span class="hljs-number">20</span> == <span class="hljs-variable">$ip</span> &gt;&gt; <span class="hljs-number">20</span> <span class="hljs-keyword">or</span> <br>		<span class="hljs-title function_ invoke__">ip2long</span>(<span class="hljs-string">&#x27;192.168.0.0&#x27;</span>) &gt;&gt; <span class="hljs-number">16</span> == <span class="hljs-variable">$ip</span> &gt;&gt; <span class="hljs-number">16</span> ;<br>	<span class="hljs-keyword">if</span>(<span class="hljs-variable">$is_inner_ipaddress</span>)&#123;<br>		<span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>	&#125;<br>	<br>	<span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br><br><span class="hljs-keyword">if</span>(<span class="hljs-keyword">isset</span>(<span class="hljs-variable">$_GET</span>[<span class="hljs-string">&#x27;url&#x27;</span>]))&#123;<br>	<span class="hljs-variable">$url</span> = <span class="hljs-variable">$_GET</span>[<span class="hljs-string">&#x27;url&#x27;</span>];<br>	<span class="hljs-title function_ invoke__">var_dump</span>(<span class="hljs-title function_ invoke__">is_allowed_URL</span>(<span class="hljs-variable">$url</span>));<br>&#125;<br><span class="hljs-meta">?&gt;</span><br></code></pre></div></td></tr></table></figure>
+
+
+
+<p>说下上面的用到的两个PHP函数:<code>parse_url()</code>和<code>gethostbyname()</code>。</p>
+<ol>
+<li><p>PHP解析URL的host：</p>
+<p><code>parse_url()</code>函数不是用来验证给定 URL 的合法性的，只是将其分解为几部分。不完整的 URL 也被接受，<code>parse_url()</code>会尝试尽量正确地将其解析。</p>
+<p>参考：<a target="_blank" rel="noopener" href="http://php.net/manual/zh/function.parse-url.php">http://php.net/manual/zh/function.parse-url.php</a></p>
+</li>
+<li><p>PHP解析URL的IP：</p>
+<p><code>gethostbyname($hostname)</code>函数会返回IPv4地址，解析失败的话就会返回没被修改过的<code>$hostname</code>。</p>
+<p>参考：<a target="_blank" rel="noopener" href="http://php.net/manual/zh/function.gethostbyname.php">http://php.net/manual/zh/function.gethostbyname.php</a></p>
+</li>
+</ol>
+<hr>
+<p>（以下内容于2021年1月25日添加）</p>
+<p>之前的代码早有绕过方式，且有个大的错误，就是在给<code>$is_inner_ipaddress</code>变量赋值的时候用了<code>or</code>，而不是<code>||</code>，导致<code>192.168.0.1</code>这些内网ip其实是没被检测到的，原因是<code>or</code>的优先级比赋值符<code>=</code>的小，<code>||</code>的优先级才比<code>=</code>的大（参考：<a target="_blank" rel="noopener" href="https://stackoverflow.com/questions/5998309/logical-operators-or-or/5998330#5998330）。">https://stackoverflow.com/questions/5998309/logical-operators-or-or/5998330#5998330）。</a></p>
+<figure class="highlight php"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br><span class="line">65</span><br><span class="line">66</span><br><span class="line">67</span><br><span class="line">68</span><br><span class="line">69</span><br><span class="line">70</span><br><span class="line">71</span><br><span class="line">72</span><br><span class="line">73</span><br><span class="line">74</span><br><span class="line">75</span><br><span class="line">76</span><br><span class="line">77</span><br><span class="line">78</span><br><span class="line">79</span><br><span class="line">80</span><br><span class="line">81</span><br><span class="line">82</span><br><span class="line">83</span><br><span class="line">84</span><br><span class="line">85</span><br><span class="line">86</span><br><span class="line">87</span><br><span class="line">88</span><br><span class="line">89</span><br><span class="line">90</span><br><span class="line">91</span><br><span class="line">92</span><br><span class="line">93</span><br><span class="line">94</span><br><span class="line">95</span><br><span class="line">96</span><br><span class="line">97</span><br><span class="line">98</span><br><span class="line">99</span><br><span class="line">100</span><br><span class="line">101</span><br><span class="line">102</span><br><span class="line">103</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs php"><span class="hljs-meta">&lt;?php</span><br><span class="hljs-comment">/*</span><br><span class="hljs-comment">*  判断是否合法的URL，合法则返回true</span><br><span class="hljs-comment">*  不合法的情况：</span><br><span class="hljs-comment">*  1. 包含非ASCII码字符</span><br><span class="hljs-comment">*  2. 不是http或https协议</span><br><span class="hljs-comment">*  3. ipv6地址（不支持ipv6地址，将判断为不合法）</span><br><span class="hljs-comment">*  4. URL的user、pass、host，fragment段包含@、\或其它字符</span><br><span class="hljs-comment">*  5. 请求地址为内网IP：192.168.0.0/16，10.0.0.0/8，172.16.0.0/12，127.0.0.1/8</span><br><span class="hljs-comment">*  6. 请求地址为169.254.169.254，100.100.100.200，192.0.0.192这几个常见云主机metadata地址ip</span><br><span class="hljs-comment">*</span><br><span class="hljs-comment">*</span><br><span class="hljs-comment">*  注意，该方法未考虑到：</span><br><span class="hljs-comment">*  1. 30X跳转的location响应头部是否为合法URL</span><br><span class="hljs-comment">*  2. DNS Rebinding攻击</span><br><span class="hljs-comment">*</span><br><span class="hljs-comment">*  <span class="hljs-doctag">@author</span> Ovie</span><br><span class="hljs-comment">*  <span class="hljs-doctag">@param</span> string $url</span><br><span class="hljs-comment">*  <span class="hljs-doctag">@return</span> bool</span><br><span class="hljs-comment">*/</span><br><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">is_allowed_URL</span>(<span class="hljs-params"><span class="hljs-variable">$url</span></span>)</span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-comment">// Only allow ASCII URL (so will forbid CRLF and other Unicode char)</span><br>    <span class="hljs-keyword">if</span> (!<span class="hljs-variable">$url</span> || !<span class="hljs-title function_ invoke__">filter_var</span>(<span class="hljs-variable">$url</span>, FILTER_VALIDATE_URL, FILTER_FLAG_PATH_REQUIRED &amp; FILTER_FLAG_HOST_REQUIRED &amp; FILTER_FLAG_QUERY_REQUIRED)) &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br><br>    <span class="hljs-comment">// Only allow http and https scheme</span><br>    <span class="hljs-keyword">if</span> (!<span class="hljs-title function_ invoke__">preg_match</span>(<span class="hljs-string">&#x27;/^https?:\/\/.*$/&#x27;</span>, <span class="hljs-variable">$url</span>)) &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br><br>    <span class="hljs-variable">$parts</span> = <span class="hljs-title function_ invoke__">parse_url</span>(<span class="hljs-variable">$url</span>);<br>    <span class="hljs-keyword">foreach</span> (<span class="hljs-keyword">array</span>(<span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;pass&quot;</span>, <span class="hljs-string">&quot;host&quot;</span>, <span class="hljs-string">&quot;fragment&quot;</span>) <span class="hljs-keyword">as</span> <span class="hljs-variable">$key</span>) &#123;<br>        <span class="hljs-keyword">if</span> (<span class="hljs-keyword">isset</span>(<span class="hljs-variable">$parts</span>[<span class="hljs-variable">$key</span>]) &amp;&amp; <span class="hljs-title function_ invoke__">preg_match</span>(<span class="hljs-string">&quot;~[:/?#\\\\@]~&quot;</span>, <span class="hljs-variable">$parts</span>[<span class="hljs-variable">$key</span>])) &#123;<br>            <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>        &#125;<br>    &#125;<br><br>    <span class="hljs-comment">// gethostbyname do not support ipv6</span><br>    <span class="hljs-variable">$ip</span> = <span class="hljs-title function_ invoke__">gethostbyname</span>(<span class="hljs-variable">$parts</span>[<span class="hljs-string">&#x27;host&#x27;</span>]);<br>    <span class="hljs-variable">$ip</span> = <span class="hljs-title function_ invoke__">ip2long</span>(<span class="hljs-variable">$ip</span>);<br>    <span class="hljs-keyword">if</span> (<span class="hljs-variable">$ip</span> === <span class="hljs-literal">false</span>) &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br><br><br>    <span class="hljs-variable">$is_inner_ipaddress</span> = <span class="hljs-title function_ invoke__">ip2long</span>(<span class="hljs-string">&#x27;127.0.0.0&#x27;</span>) &gt;&gt; <span class="hljs-number">24</span> == <span class="hljs-variable">$ip</span> &gt;&gt; <span class="hljs-number">24</span> ||<br>    <span class="hljs-title function_ invoke__">ip2long</span>(<span class="hljs-string">&#x27;10.0.0.0&#x27;</span>) &gt;&gt; <span class="hljs-number">24</span> == <span class="hljs-variable">$ip</span> &gt;&gt; <span class="hljs-number">24</span> ||<br>    <span class="hljs-title function_ invoke__">ip2long</span>(<span class="hljs-string">&#x27;172.16.0.0&#x27;</span>) &gt;&gt; <span class="hljs-number">20</span> == <span class="hljs-variable">$ip</span> &gt;&gt; <span class="hljs-number">20</span> ||<br>    <span class="hljs-title function_ invoke__">ip2long</span>(<span class="hljs-string">&#x27;192.168.0.0&#x27;</span>) &gt;&gt; <span class="hljs-number">16</span> == <span class="hljs-variable">$ip</span> &gt;&gt; <span class="hljs-number">16</span> ||<br>    <span class="hljs-variable">$ip</span> == <span class="hljs-number">0</span> ||<br>    <span class="hljs-title function_ invoke__">ip2long</span>(<span class="hljs-string">&#x27;169.254.169.254&#x27;</span>) == <span class="hljs-variable">$ip</span> ||<br>    <span class="hljs-title function_ invoke__">ip2long</span>(<span class="hljs-string">&#x27;192.0.0.192&#x27;</span>) == <span class="hljs-variable">$ip</span> ||<br>    <span class="hljs-title function_ invoke__">ip2long</span>(<span class="hljs-string">&#x27;100.100.100.200&#x27;</span>) == <span class="hljs-variable">$ip</span>;<br>    <span class="hljs-keyword">if</span> (<span class="hljs-variable">$is_inner_ipaddress</span>) &#123;<br>        <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>;<br>    &#125;<br><br>    <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;<br>&#125;<br><br><span class="hljs-comment">/*</span><br><span class="hljs-comment">if(isset($_GET[&#x27;url&#x27;]))&#123;</span><br><span class="hljs-comment">	$url = $_GET[&#x27;url&#x27;];</span><br><span class="hljs-comment">	var_dump(is_allowed_URL($url));</span><br><span class="hljs-comment">&#125;</span><br><span class="hljs-comment">*/</span><br><br><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">test</span>(<span class="hljs-params"><span class="hljs-variable">$url</span></span>)</span><br><span class="hljs-function"></span>&#123;<br>    <span class="hljs-variable">$res</span> = <span class="hljs-title function_ invoke__">is_allowed_URL</span>(<span class="hljs-variable">$url</span>);<br>    <span class="hljs-keyword">echo</span> <span class="hljs-variable">$url</span> . <span class="hljs-string">&quot; : &quot;</span> . (<span class="hljs-variable">$res</span> ? <span class="hljs-variable">$res</span> : <span class="hljs-string">&quot;false&quot;</span>) . <span class="hljs-string">&quot;\n&quot;</span>;<br>&#125;<br><br><br><br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://127.0.0.1:8080/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://169.254.169.254:8080/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://192.0.0.192:8080/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://100.100.100.200:8080/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://127.0.0.1:8080\@baidu.com/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://baidu.com#@127.0.0.1:8080/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://127.1:8080/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://127.0.0.1.:8080/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://2130706433:8080/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://0:8080/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://[::]:8080/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://localhost:8080/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://0:0:0:0:0:ffff:127.0.0.1:8080/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://127.0000.000000.000001:8080/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://127.0.0.1:8080#@baidu.com/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;http://[::1]/&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://0.0.0.0:8080/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://127.2.0.2:8080/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://0x7f.0x0.0x0.0x1:8080/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://baidu.com.127.0.0.1.nip.io:8080/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://baidu.com@127.0.0.1:8080@baidu.com/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://127.0.0.1:8080\.baidu.com/ppppp&quot;</span>);<br><span class="hljs-title function_ invoke__">test</span>(<span class="hljs-string">&quot;https://127.0.0.1:8080:443/ppppp&quot;</span>);<br><br><br><span class="hljs-meta">?&gt;</span><br></code></pre></div></td></tr></table></figure>
+
+<p>在<code>php 7.2</code>下运行的结果：</p>
+<figure class="highlight awk"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs awk">https:<span class="hljs-regexp">//</span><span class="hljs-number">127.0</span>.<span class="hljs-number">0.1</span>:<span class="hljs-number">8080</span>/ppppp : false<br>https:<span class="hljs-regexp">//</span><span class="hljs-number">169.254</span>.<span class="hljs-number">169.254</span>:<span class="hljs-number">8080</span>/ppppp : false<br>https:<span class="hljs-regexp">//</span><span class="hljs-number">192.0</span>.<span class="hljs-number">0.192</span>:<span class="hljs-number">8080</span>/ppppp : false<br>https:<span class="hljs-regexp">//</span><span class="hljs-number">100.100</span>.<span class="hljs-number">100.200</span>:<span class="hljs-number">8080</span>/ppppp : false<br>https:<span class="hljs-regexp">//</span><span class="hljs-number">127.0</span>.<span class="hljs-number">0.1</span>:<span class="hljs-number">8080</span>\@baidu.com/ppppp : false<br>https:<span class="hljs-regexp">//</span>baidu.com<span class="hljs-comment">#@127.0.0.1:8080/ppppp : false</span><br>https:<span class="hljs-regexp">//</span><span class="hljs-number">127.1</span>:<span class="hljs-number">8080</span>/ppppp : false<br>https:<span class="hljs-regexp">//</span><span class="hljs-number">127.0</span>.<span class="hljs-number">0.1</span>.:<span class="hljs-number">8080</span>/ppppp : false<br>https:<span class="hljs-regexp">//</span><span class="hljs-number">2130706433</span>:<span class="hljs-number">8080</span>/ppppp : false<br>https:<span class="hljs-regexp">//</span><span class="hljs-number">0</span>:<span class="hljs-number">8080</span>/ppppp : false<br>https:<span class="hljs-regexp">//</span>[::]:<span class="hljs-number">8080</span>/ppppp : false<br>https:<span class="hljs-regexp">//</span>localhost:<span class="hljs-number">8080</span>/ppppp : false<br>https:<span class="hljs-regexp">//</span><span class="hljs-number">0</span>:<span class="hljs-number">0</span>:<span class="hljs-number">0</span>:<span class="hljs-number">0</span>:<span class="hljs-number">0</span>:ffff:<span class="hljs-number">127.0</span>.<span class="hljs-number">0.1</span>:<span class="hljs-number">8080</span>/ppppp : false<br>https:<span class="hljs-regexp">//</span><span class="hljs-number">127.0000</span>.<span class="hljs-number">000000.000001</span>:<span class="hljs-number">8080</span>/ppppp : false<br>https:<span class="hljs-regexp">//</span><span class="hljs-number">127.0</span>.<span class="hljs-number">0.1</span>:<span class="hljs-number">8080</span><span class="hljs-comment">#@baidu.com/ppppp : false</span><br>http:<span class="hljs-regexp">//</span>[::<span class="hljs-number">1</span>]/ : false<br>https:<span class="hljs-regexp">//</span><span class="hljs-number">0.0</span>.<span class="hljs-number">0.0</span>:<span class="hljs-number">8080</span>/ppppp : false<br>https:<span class="hljs-regexp">//</span><span class="hljs-number">127.2</span>.<span class="hljs-number">0.2</span>:<span class="hljs-number">8080</span>/ppppp : false<br>https:<span class="hljs-regexp">//</span><span class="hljs-number">0</span>x7f.<span class="hljs-number">0</span>x0.<span class="hljs-number">0</span>x0.<span class="hljs-number">0</span>x1:<span class="hljs-number">8080</span>/ppppp : false<br>https:<span class="hljs-regexp">//</span>baidu.com.<span class="hljs-number">127.0</span>.<span class="hljs-number">0.1</span>.nip.io:<span class="hljs-number">8080</span>/ppppp : false<br>https:<span class="hljs-regexp">//</span>baidu.com@<span class="hljs-number">127.0</span>.<span class="hljs-number">0.1</span>:<span class="hljs-number">8080</span>@baidu.com/ppppp : false<br>https:<span class="hljs-regexp">//</span><span class="hljs-number">127.0</span>.<span class="hljs-number">0.1</span>:<span class="hljs-number">8080</span>\.baidu.com/ppppp : false<br>https:<span class="hljs-regexp">//</span><span class="hljs-number">127.0</span>.<span class="hljs-number">0.1</span>:<span class="hljs-number">8080</span>:<span class="hljs-number">443</span>/ppppp : false<br></code></pre></div></td></tr></table></figure>
+
+
+
+<p>这份验证代码有些繁琐，不同场景下可能需要做点调整。如有什么问题，请指出~</p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/Web%E5%AE%89%E5%85%A8/">Web安全</a>
+                    
+                      <a class="hover-with-bg" href="/tags/PHP/">PHP</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2017/01/16/python-decorator/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Python装饰器</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2016/08/30/ctf-who-are-you/">
+                        <span class="hidden-mobile">实验吧CTF - Who are you</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments" lazyload>
+                
+                  
+                
+                
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'Ovi3/Ovi3.github.io');
+      s.setAttribute('issue-term', 'title');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+  <div class="statistics">
+    
+    
+
+    
+      
+        <!-- 不蒜子统计PV -->
+        <span id="busuanzi_container_site_pv" style="display: none">
+            总访问量 
+            <span id="busuanzi_value_site_pv"></span>
+             次
+          </span>
+      
+      
+        <!-- 不蒜子统计UV -->
+        <span id="busuanzi_container_site_uv" style="display: none">
+            总访客数 
+            <span id="busuanzi_value_site_uv"></span>
+             人
+          </span>
+      
+    
+  </div>
+
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js" ></script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+<script>
+
+function observeAndDisplay(sourceId, targetId) {
+  if (document.getElementById(sourceId)) {
+    new MutationObserver(m => {
+      m.forEach(m => {
+        if (m.target.textContent.trim() !== '') {
+          document.getElementById(targetId).style.display = 'inline';
+        }
+      });
+    })
+      .observe(
+        document.getElementById(sourceId),
+        { childList: true, characterData: true, subtree: true }
+      );
+  }
+
+}
+
+observeAndDisplay('busuanzi_value_page_pv', 'busuanzi_container_page_pv');
+observeAndDisplay('busuanzi_value_site_pv', 'busuanzi_container_site_pv');
+observeAndDisplay('busuanzi_value_site_uv', 'busuanzi_container_site_uv');
+
+
+</script>
+
+  <script defer src="https://cn.vercount.one/js?i=/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

@@ -1,0 +1,558 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;dark&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/shinchan.png">
+  <link rel="icon" href="/img/shinchan.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="Ovie博客,Ovi3博客">
+  <meta name="author" content="Ovie">
+  <meta name="keywords" content="Ovie博客,Ovi3博客,个人博客,技术分享,网络安全,安全研发,安全研究,渗透测试">
+  <meta name="google-site-verification" content="eW4bY2KPHT_B6-DOYCuxmzwdjlQ34WXHQ4X3G__8cKY" />
+  
+  <title>Burpsuite Java插件开发 - 基础篇 - Ovie博客</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.7.2/styles/vs2015.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"ovi3.github.io","root":"/","version":"1.8.11","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.2"><link rel="alternate" href="/atom.xml" title="Ovie博客" type="application/atom+xml">
+<link rel="alternate" href="/rss2.xml" title="Ovie博客" type="application/rss+xml">
+</head>
+
+
+<body>
+  <header style="height: 60vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Ovie</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/atom.xml">
+                <i class="iconfont icon-rss-fill"></i>
+                 
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('https://api.boxmoe.com/random.php?3') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="Burpsuite Java插件开发 - 基础篇">
+              
+                Burpsuite Java插件开发 - 基础篇
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2024-01-18 00:06" pubdate>
+        2024年1月18日 凌晨
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      2k 字
+    </span>
+  
+
+  
+
+  
+  
+    
+      <!-- 不蒜子统计文章PV -->
+      <span id="busuanzi_container_page_pv" style="display: none">
+        <i class="iconfont icon-eye" aria-hidden="true"></i>
+        <span id="busuanzi_value_page_pv"></span> 次
+      </span>
+    
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">Burpsuite Java插件开发 - 基础篇</h1>
+            
+            <div class="markdown-body">
+              <p>BurpSuite插件可以使用Java、Python或Ruby来编写，因为BurpSuite（以下简称为BP或Burp）本身是用Java写的，通常插件的开发也是用Java来编写。如果用Python编写，还要安装Jython，而且在安装一些Python模块时可能会报错，加上目前Jython不支持Python 3，所以用Python写写BP小插件还行，功能多的话还是推荐用Java写。</p>
+<p>本文主要内容是使用Java编写BP插件时，如何使用IDEA构建 Gradle 和 Maven 项目，编写一个Hello World插件，与如何调试插件。网上这类文章很多了，我主要补充一些在网上没看到的。</p>
+<p>文中用到的BP版本为 Burpsuite Pro v2023.4.5， IDEA版本为2023.1.2。</p>
+<h3 id="IDEA-Gradle-开发"><a href="#IDEA-Gradle-开发" class="headerlink" title="IDEA + Gradle 开发"></a>IDEA + Gradle 开发</h3><p>使用IDEA新建一个Gradle项目：</p>
+<p><img src="burpsuite-java-extension-code-env-1.png" srcset="/img/loading.gif" lazyload alt="burpsuite-java-extension-code-env-1.png"></p>
+<p><code>Build System</code>选择<code>Gradle</code>，<code>Gradle DSL</code>选择<code>Groovy</code>。</p>
+<p>修改<code>build.gradle</code>文件，引入编写BP插件需要的API库：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs groovy">plugins &#123;<br>    id <span class="hljs-string">&#x27;java&#x27;</span><br>&#125;<br><br>repositories &#123;<br>    mavenCentral()<br>&#125;<br><br>sourceSets &#123;<br>    main &#123;<br>        java &#123;<br>            srcDir <span class="hljs-string">&#x27;./src/main/java&#x27;</span><br>        &#125;<br>    &#125;<br>&#125;<br><br>tasks.register(<span class="hljs-string">&#x27;fatJar&#x27;</span>, Jar) &#123;<br>    archivesBaseName = project.name + <span class="hljs-string">&#x27;-all&#x27;</span><br>    from &#123; configurations.runtimeClasspath.collect &#123; it.isDirectory() ? it : zipTree(it) &#125; &#125;<br>    with jar<br>&#125;<br><br>dependencies &#123;<br>    implementation <span class="hljs-string">&#x27;net.portswigger.burp.extender:burp-extender-api:1.7.22&#x27;</span><br>&#125;<br></code></pre></div></td></tr></table></figure>
+
+<p>我本机使用的是Gradle 8，如果是低版本的Gradle，由于build.gradle配置文件的语法略有不同，可能需要改一下，主要是fatJar这块要改为：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs groovy">task fatJar(<span class="hljs-attr">type:</span> Jar) &#123;<br>    baseName = project.name + <span class="hljs-string">&#x27;-all&#x27;</span><br>    from &#123; configurations.compile.collect &#123; it.isDirectory() ? it : zipTree(it) &#125; &#125;<br>    with jar<br>&#125;<br></code></pre></div></td></tr></table></figure>
+
+<p>然后<code>implementation</code> 指令改为 <code>compile</code> 。</p>
+<p>接着在源码目录（<code>src/main/java/</code>）下新建<code>burp</code>目录，再在<code>burp</code>目录下新建一个<code>BurpExtender</code>类，再复制官方提供的HelloWorld示例 <a target="_blank" rel="noopener" href="https://github.com/PortSwigger/example-hello-world/blob/master/java/BurpExtender.java">BurpExtender.java</a> 代码过来。</p>
+<p>然后点击IDEA右侧的Gradle工具窗口 - 刷新按钮，让Gradle重新加载配置文件，下载依赖库。（如果没看到Gradle工具按钮，就点 <code>View -&gt; Tool Windows -&gt; Gradle</code> 打开）</p>
+<p><img src="burpsuite-java-extension-code-env-2.png" srcset="/img/loading.gif" lazyload alt="burpsuite-java-extension-code-env-2.png"></p>
+<p>如果一切OK，再点击运行<code>Tasks - other - fastJar</code>，编译一个jar包出来。 这个jar包在项目根目录下的<code>build/libs</code> 目录。用BurpSuite加载这个Jar，运行你的第一个BP插件吧。</p>
+<h3 id="IDEA-Maven-开发"><a href="#IDEA-Maven-开发" class="headerlink" title="IDEA + Maven 开发"></a>IDEA + Maven 开发</h3><p>用IDEA新建一个Maven项目</p>
+<p><img src="burpsuite-java-extension-code-env-3.png" srcset="/img/loading.gif" lazyload alt="burpsuite-java-extension-code-env-3.png"></p>
+<p><code>Build System</code>选择<code>Maven</code>。</p>
+<p>修改pom.xml文件为：</p>
+<figure class="highlight xml"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br><span class="line">56</span><br><span class="line">57</span><br><span class="line">58</span><br><span class="line">59</span><br><span class="line">60</span><br><span class="line">61</span><br><span class="line">62</span><br><span class="line">63</span><br><span class="line">64</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs xml"><span class="hljs-meta">&lt;?xml version=<span class="hljs-string">&quot;1.0&quot;</span> encoding=<span class="hljs-string">&quot;UTF-8&quot;</span>?&gt;</span><br><span class="hljs-tag">&lt;<span class="hljs-name">project</span> <span class="hljs-attr">xmlns</span>=<span class="hljs-string">&quot;http://maven.apache.org/POM/4.0.0&quot;</span></span><br><span class="hljs-tag">         <span class="hljs-attr">xmlns:xsi</span>=<span class="hljs-string">&quot;http://www.w3.org/2001/XMLSchema-instance&quot;</span></span><br><span class="hljs-tag">         <span class="hljs-attr">xsi:schemaLocation</span>=<span class="hljs-string">&quot;http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd&quot;</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">modelVersion</span>&gt;</span>4.0.0<span class="hljs-tag">&lt;/<span class="hljs-name">modelVersion</span>&gt;</span><br><br>    <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.example<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>HelloBPMaven<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br>    <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>1.0-SNAPSHOT<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span><br><br>    <span class="hljs-tag">&lt;<span class="hljs-name">properties</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">maven.compiler.source</span>&gt;</span>8<span class="hljs-tag">&lt;/<span class="hljs-name">maven.compiler.source</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">maven.compiler.target</span>&gt;</span>8<span class="hljs-tag">&lt;/<span class="hljs-name">maven.compiler.target</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">project.build.sourceEncoding</span>&gt;</span>UTF-8<span class="hljs-tag">&lt;/<span class="hljs-name">project.build.sourceEncoding</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">properties</span>&gt;</span><br><br>    <span class="hljs-tag">&lt;<span class="hljs-name">build</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">plugins</span>&gt;</span><br>            <span class="hljs-tag">&lt;<span class="hljs-name">plugin</span>&gt;</span><br>                <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>                <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>maven-shade-plugin<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br>                <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.4.1<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span><br>                <span class="hljs-tag">&lt;<span class="hljs-name">executions</span>&gt;</span><br>                    <span class="hljs-tag">&lt;<span class="hljs-name">execution</span>&gt;</span><br>                        <span class="hljs-tag">&lt;<span class="hljs-name">phase</span>&gt;</span>package<span class="hljs-tag">&lt;/<span class="hljs-name">phase</span>&gt;</span><br>                        <span class="hljs-tag">&lt;<span class="hljs-name">goals</span>&gt;</span><br>                            <span class="hljs-tag">&lt;<span class="hljs-name">goal</span>&gt;</span>shade<span class="hljs-tag">&lt;/<span class="hljs-name">goal</span>&gt;</span><br>                        <span class="hljs-tag">&lt;/<span class="hljs-name">goals</span>&gt;</span><br>                    <span class="hljs-tag">&lt;/<span class="hljs-name">execution</span>&gt;</span><br>                <span class="hljs-tag">&lt;/<span class="hljs-name">executions</span>&gt;</span><br>            <span class="hljs-tag">&lt;/<span class="hljs-name">plugin</span>&gt;</span><br>            <span class="hljs-tag">&lt;<span class="hljs-name">plugin</span>&gt;</span><br>                <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>                <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>maven-compiler-plugin<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br>                <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.11.0<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span><br>                <span class="hljs-tag">&lt;<span class="hljs-name">configuration</span>&gt;</span><br>                    <span class="hljs-tag">&lt;<span class="hljs-name">source</span>&gt;</span>8<span class="hljs-tag">&lt;/<span class="hljs-name">source</span>&gt;</span><br>                    <span class="hljs-tag">&lt;<span class="hljs-name">target</span>&gt;</span>8<span class="hljs-tag">&lt;/<span class="hljs-name">target</span>&gt;</span><br>                <span class="hljs-tag">&lt;/<span class="hljs-name">configuration</span>&gt;</span><br>            <span class="hljs-tag">&lt;/<span class="hljs-name">plugin</span>&gt;</span><br>            <span class="hljs-tag">&lt;<span class="hljs-name">plugin</span>&gt;</span><br>                <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>org.apache.maven.plugins<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>                <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>maven-jar-plugin<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br>                <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>3.3.0<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span><br>                <span class="hljs-tag">&lt;<span class="hljs-name">configuration</span>&gt;</span><br>                    <span class="hljs-tag">&lt;<span class="hljs-name">archive</span>&gt;</span><br>                        <span class="hljs-tag">&lt;<span class="hljs-name">addMavenDescriptor</span>&gt;</span>false<span class="hljs-tag">&lt;/<span class="hljs-name">addMavenDescriptor</span>&gt;</span><br>                        <span class="hljs-tag">&lt;<span class="hljs-name">manifestEntries</span>&gt;</span><br>                            <span class="hljs-tag">&lt;<span class="hljs-name">Built-By</span>&gt;</span>XX<span class="hljs-tag">&lt;/<span class="hljs-name">Built-By</span>&gt;</span><br>                        <span class="hljs-tag">&lt;/<span class="hljs-name">manifestEntries</span>&gt;</span><br>                    <span class="hljs-tag">&lt;/<span class="hljs-name">archive</span>&gt;</span><br>                <span class="hljs-tag">&lt;/<span class="hljs-name">configuration</span>&gt;</span><br>            <span class="hljs-tag">&lt;/<span class="hljs-name">plugin</span>&gt;</span><br>        <span class="hljs-tag">&lt;/<span class="hljs-name">plugins</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">build</span>&gt;</span><br><br>    <span class="hljs-tag">&lt;<span class="hljs-name">dependencies</span>&gt;</span><br>        <span class="hljs-tag">&lt;<span class="hljs-name">dependency</span>&gt;</span><br>            <span class="hljs-tag">&lt;<span class="hljs-name">groupId</span>&gt;</span>net.portswigger.burp.extender<span class="hljs-tag">&lt;/<span class="hljs-name">groupId</span>&gt;</span><br>            <span class="hljs-tag">&lt;<span class="hljs-name">artifactId</span>&gt;</span>burp-extender-api<span class="hljs-tag">&lt;/<span class="hljs-name">artifactId</span>&gt;</span><br>            <span class="hljs-tag">&lt;<span class="hljs-name">version</span>&gt;</span>1.7.22<span class="hljs-tag">&lt;/<span class="hljs-name">version</span>&gt;</span><br>        <span class="hljs-tag">&lt;/<span class="hljs-name">dependency</span>&gt;</span><br>    <span class="hljs-tag">&lt;/<span class="hljs-name">dependencies</span>&gt;</span><br><span class="hljs-tag">&lt;/<span class="hljs-name">project</span>&gt;</span><br></code></pre></div></td></tr></table></figure>
+
+<p>主要是加上了<code>build</code>和<code>dependencies</code>块。<code>dependencies</code>块引入BP插件API库，<code>build</code>块里配置<code>maven-shade-plugin</code>插件在打包时可以将项目的依赖也打入jar包里。</p>
+<p>由于打包后的jar包里，<code>META-INF/MANIFEST.MF</code>文件的<code>Built-By</code>字段默认是本地计算机用户名，所以加上对<code>maven-jar-plugin</code>插件的配置，将<code>Built-By</code>字段值覆盖掉，避免信息泄露。</p>
+<p>接着在源码目录（<code>src/main/java/</code>）下新建<code>burp</code>目录，再在<code>burp</code>目录下新建一个<code>BurpExtender</code>类，再复制官方提供的HelloWorld示例 <a target="_blank" rel="noopener" href="https://github.com/PortSwigger/example-hello-world/blob/master/java/BurpExtender.java">BurpExtender.java</a> 代码过来。</p>
+<p>然后点击IDEA右侧的Maven工具窗口 - 刷新按钮，让Maven重新加载配置文件，下载依赖库。</p>
+<p><img src="burpsuite-java-extension-code-env-4.png" srcset="/img/loading.gif" lazyload alt="burpsuite-java-extension-code-env-4.png"></p>
+<p>如果一切OK，再点击运行<code>Lifecycle - package</code>，编译一个jar包出来。 这个jar包在项目根目录下的<code>target</code> 目录。用BurpSuite加载这个Jar（不是那个以<code>original-</code>开头的jar包），运行你的第一个BP插件吧。</p>
+<p>如果修改pom.xml后编译，发现修改不生效，先刷新，再运行<code>Lifecycle - clean</code>，再<code>package</code>打包。</p>
+<h3 id="调试插件"><a href="#调试插件" class="headerlink" title="调试插件"></a>调试插件</h3><p>简单的调试可以用打印输出。比如在上方用到的Hello World示例中，加上这两句调用BP提供的<code>IBurpExtenderCallbacks</code>接口方法：</p>
+<figure class="highlight java"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs java">callbacks.printOutput(<span class="hljs-string">&quot;output&quot;</span>); <span class="hljs-comment">// 输出到 Extensions -&gt; Installed -&gt; 选择自己的插件 -&gt; Output</span><br>callbacks.printError(<span class="hljs-string">&quot;error&quot;</span>); <span class="hljs-comment">// 输出到 Extensions -&gt; Installed -&gt; 选择自己的插件 -&gt; Errors</span><br></code></pre></div></td></tr></table></figure>
+
+<p>假如在编写或使用插件时，需频繁查看插件日志，可以保留着加载插件时弹出来的那个日志窗口。</p>
+<p>打印调试法毕竟麻烦，还得用断点调试：</p>
+<p>打开运行配置：</p>
+<p><img src="burpsuite-java-extension-code-env-5.png" srcset="/img/loading.gif" lazyload alt="burpsuite-java-extension-code-env-5.png"></p>
+<p>新建一项<code>Remote JVM Debug</code>的运行配置，可以直接使用默认配置。其默认配置是：</p>
+<figure class="highlight yaml"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs yaml"><span class="hljs-attr">Debugger mode:</span> <span class="hljs-string">Attach</span> <span class="hljs-string">to</span> <span class="hljs-string">remote</span> <span class="hljs-string">JVM</span><br><span class="hljs-attr">Transport:</span> <span class="hljs-string">Socket</span><br><span class="hljs-attr">Host:</span> <span class="hljs-string">localhost</span><br><span class="hljs-attr">Port:</span> <span class="hljs-number">5005</span><br></code></pre></div></td></tr></table></figure>
+
+<p>运行BP时加上该参数：<code>-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005</code>。如：</p>
+<figure class="highlight bash"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs bash">java -agentlib:jdwp=transport=dt_socket,server=y,<span class="hljs-built_in">suspend</span>=n,address=5005 -jar burpsuite.jar<br></code></pre></div></td></tr></table></figure>
+
+<p>IDEA里执行刚添加的<code>Remote JVM Debug</code>配置，并下断点。 BP加载插件，运行到断点处就会断下。</p>
+<p>另外建议在终端里执行命令来启动BP，因为有的异常你没捕获的话，异常堆栈会在终端里打印，在BP里的插件日志里是看不到的。</p>
+<p>还有一个小tip：按住 <code>Ctrl</code> 或 <code>Command</code> 键并单击插件列表中某个插件的Loaded复选框可以重新加载插件。</p>
+<h3 id="MacOS下的BP插件调试"><a href="#MacOS下的BP插件调试" class="headerlink" title="MacOS下的BP插件调试"></a>MacOS下的BP插件调试</h3><p>假如下载的是BP Mac版本的app（而不是单独的jar包），其自带OpenJDK。如果想用自带OpenJDK启动调试BP的话，就给 <code>Burp Suite Professional.app</code>里的 <code>vmoptions.txt</code> 文件加上一句：</p>
+<figure class="highlight elm"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs elm">-agentlib:jdwp=trans<span class="hljs-keyword">port</span>=dt_socket,server=y,suspend=n,address=5005<br></code></pre></div></td></tr></table></figure>
+
+<p>然而加上后，启动BP失败了。执行 <code>/Applications/Burp\ Suite\ Professional.app/Contents/MacOS/JavaApplicationStub</code>，可以看到报错：</p>
+<figure class="highlight delphi"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs delphi">OpenJDK <span class="hljs-number">64</span>-Bit Server VM warning: Options -Xverify:none <span class="hljs-keyword">and</span> -noverify were <span class="hljs-keyword">deprecated</span> <span class="hljs-keyword">in</span> JDK <span class="hljs-number">13</span> <span class="hljs-keyword">and</span> will likely be removed <span class="hljs-keyword">in</span> a future release.<br>Error occurred during <span class="hljs-keyword">initialization</span> <span class="hljs-keyword">of</span> VM<br>Could <span class="hljs-keyword">not</span> find agent <span class="hljs-keyword">library</span> jdwp <span class="hljs-keyword">on</span> the <span class="hljs-keyword">library</span> path, <span class="hljs-keyword">with</span> error: dlopen(libjdwp.dylib, <span class="hljs-number">0</span>x0001): tried: <span class="hljs-string">&#x27;libjdwp.dylib&#x27;</span> (relative path <span class="hljs-keyword">not</span> allowed <span class="hljs-keyword">in</span> hardened <span class="hljs-keyword">program</span>), <span class="hljs-string">&#x27;/System/Volumes/Preboot/Cryptexes/OSlibjdwp.dylib&#x27;</span> (no such <span class="hljs-keyword">file</span>), <span class="hljs-string">&#x27;/Applications/Burp Suite Professional.app/Contents/Resources/jre.bundle/Contents/Home/lib/server/./libjdwp.dylib&#x27;</span> (mach-o <span class="hljs-keyword">file</span>, but <span class="hljs-keyword">is</span> an incompatible architecture (have <span class="hljs-string">&#x27;x86_64&#x27;</span>, need <span class="hljs-string">&#x27;arm64&#x27;</span>)), <span class="hljs-string">&#x27;/Applications/Burp Suite Professional.app/Contents/Resources/jre.bundle/Contents/Home/lib/server/../libjdwp.dylib&#x27;</span> (no such <span class="hljs-keyword">file</span>), <span class="hljs-string">&#x27;/usr/lib/libjdwp.dylib&#x27;</span> (no such <span class="hljs-keyword">file</span>, <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> dyld cache), <span class="hljs-string">&#x27;libjdwp.dylib&#x27;</span> (relative path <span class="hljs-keyword">not</span> allowed <span class="hljs-keyword">in</span> hardened <span class="hljs-keyword">program</span>), <span class="hljs-string">&#x27;/usr/lib/libjdwp.dylib&#x27;</span> (no such <span class="hljs-keyword">file</span>, <span class="hljs-keyword">not</span> <span class="hljs-keyword">in</span> dyld cache)<br></code></pre></div></td></tr></table></figure>
+
+<p>提示缺少<code>libjdwp.dylib</code>库文件。我的解决方式是：</p>
+<ol>
+<li><p>执行<code>/Applications/Burp\ Suite\ Professional.app/Contents/Resources/jre.bundle/Contents/Home/bin/java -version</code>，先看下OpenJDK的版本，是openjdk 19.0.2：</p>
+ <figure class="highlight apache"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs apache"><span class="hljs-attribute">openjdk</span> version <span class="hljs-string">&quot;19.0.2&quot;</span> <span class="hljs-number">2023</span>-<span class="hljs-number">01</span>-<span class="hljs-number">17</span><br><span class="hljs-attribute">OpenJDK</span> Runtime Environment (build <span class="hljs-number">19</span>.<span class="hljs-number">0</span>.<span class="hljs-number">2</span>+<span class="hljs-number">7</span>-<span class="hljs-number">44</span>)<br><span class="hljs-attribute">OpenJDK</span> <span class="hljs-number">64</span>-Bit Server VM (build <span class="hljs-number">19</span>.<span class="hljs-number">0</span>.<span class="hljs-number">2</span>+<span class="hljs-number">7</span>-<span class="hljs-number">44</span>, mixed mode)<br></code></pre></div></td></tr></table></figure>
+</li>
+<li><p>到 <a target="_blank" rel="noopener" href="https://www.oracle.com/java/technologies/javase/jdk19-archive-downloads.html">https://www.oracle.com/java/technologies/javase/jdk19-archive-downloads.html</a> 下载一个对应版本的jdk包。（注意自己的CPU架构是x64还是Arm 64）</p>
+</li>
+<li><p>解压刚下载的jdk包，并将 <code>libjdwp.dylib</code> 和 <code>libdt_socket.dylib</code>文件拷贝到<code>Burp Suite Professional.app</code>里：</p>
+ <figure class="highlight awk"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs awk">cp <span class="hljs-regexp">/Users/</span>ovie<span class="hljs-regexp">/Downloads/</span>jdk-<span class="hljs-number">19.0</span>.<span class="hljs-number">2</span>.jdk<span class="hljs-regexp">/Contents/</span>Home<span class="hljs-regexp">/lib/</span>libjdwp.dylib <span class="hljs-regexp">/Applications/</span>Burp\ Suite\ Professional.app<span class="hljs-regexp">/Contents/</span>Resources<span class="hljs-regexp">/jre.bundle/</span>Contents<span class="hljs-regexp">/Home/</span>lib<span class="hljs-regexp">/server/</span>libjdwp.dylib<br><br>cp <span class="hljs-regexp">/Users/</span>ovie<span class="hljs-regexp">/Downloads/</span>jdk-<span class="hljs-number">19.0</span>.<span class="hljs-number">2</span>.jdk<span class="hljs-regexp">/Contents/</span>Home<span class="hljs-regexp">/lib/</span>libdt_socket.dylib <span class="hljs-regexp">/Applications/</span>Burp\ Suite\ Professional.app<span class="hljs-regexp">/Contents/</span>Resources<span class="hljs-regexp">/jre.bundle/</span>Contents<span class="hljs-regexp">/Home/</span>lib<span class="hljs-regexp">/server/</span>libdt_socket.dylib<br></code></pre></div></td></tr></table></figure>
+
+
+</li>
+</ol>
+<p>附：之前遇到的一个问题，OpenJDK里没有 <code>com.sun.net.httpserver.HttpServer</code> 这个类（在Oracle JDK里，这个类在 <code>rt.jar</code>），如果BP插件里用此类启动http服务，会报 <code>java.lang.NoClassDefFoundError: com/sun/net/httpserver/HttpServer</code>。</p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/Burpsuite/">Burpsuite</a>
+                    
+                      <a class="hover-with-bg" href="/tags/Web%E5%AE%89%E5%85%A8/">Web安全</a>
+                    
+                      <a class="hover-with-bg" href="/tags/Java/">Java</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/01/18/burpsuite-java-extension-api/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Burpsuite Java插件开发 - API篇</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/12/29/find-cyberspace-search-engine/">
+                        <span class="hidden-mobile">如何找出网络空间测绘引擎扫描客户端IP</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments" lazyload>
+                
+                  
+                
+                
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'Ovi3/Ovi3.github.io');
+      s.setAttribute('issue-term', 'title');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+  <div class="statistics">
+    
+    
+
+    
+      
+        <!-- 不蒜子统计PV -->
+        <span id="busuanzi_container_site_pv" style="display: none">
+            总访问量 
+            <span id="busuanzi_value_site_pv"></span>
+             次
+          </span>
+      
+      
+        <!-- 不蒜子统计UV -->
+        <span id="busuanzi_container_site_uv" style="display: none">
+            总访客数 
+            <span id="busuanzi_value_site_uv"></span>
+             人
+          </span>
+      
+    
+  </div>
+
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js" ></script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+<script>
+
+function observeAndDisplay(sourceId, targetId) {
+  if (document.getElementById(sourceId)) {
+    new MutationObserver(m => {
+      m.forEach(m => {
+        if (m.target.textContent.trim() !== '') {
+          document.getElementById(targetId).style.display = 'inline';
+        }
+      });
+    })
+      .observe(
+        document.getElementById(sourceId),
+        { childList: true, characterData: true, subtree: true }
+      );
+  }
+
+}
+
+observeAndDisplay('busuanzi_value_page_pv', 'busuanzi_container_page_pv');
+observeAndDisplay('busuanzi_value_site_pv', 'busuanzi_container_site_pv');
+observeAndDisplay('busuanzi_value_site_uv', 'busuanzi_container_site_uv');
+
+
+</script>
+
+  <script defer src="https://cn.vercount.one/js?i=/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

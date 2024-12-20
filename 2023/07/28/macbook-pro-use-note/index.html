@@ -1,0 +1,720 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;dark&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/shinchan.png">
+  <link rel="icon" href="/img/shinchan.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="Ovie博客,Ovi3博客">
+  <meta name="author" content="Ovie">
+  <meta name="keywords" content="Ovie博客,Ovi3博客,个人博客,技术分享,网络安全,安全研发,安全研究,渗透测试">
+  <meta name="google-site-verification" content="eW4bY2KPHT_B6-DOYCuxmzwdjlQ34WXHQ4X3G__8cKY" />
+  
+  <title>苹果电脑使用笔记 - Ovie博客</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.7.2/styles/vs2015.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"ovi3.github.io","root":"/","version":"1.8.11","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.2"><link rel="alternate" href="/atom.xml" title="Ovie博客" type="application/atom+xml">
+<link rel="alternate" href="/rss2.xml" title="Ovie博客" type="application/rss+xml">
+</head>
+
+
+<body>
+  <header style="height: 60vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Ovie</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/atom.xml">
+                <i class="iconfont icon-rss-fill"></i>
+                 
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('https://api.boxmoe.com/random.php?3') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="苹果电脑使用笔记">
+              
+                苹果电脑使用笔记
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2023-07-28 22:53" pubdate>
+        2023年7月28日 晚上
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      3.8k 字
+    </span>
+  
+
+  
+
+  
+  
+    
+      <!-- 不蒜子统计文章PV -->
+      <span id="busuanzi_container_page_pv" style="display: none">
+        <i class="iconfont icon-eye" aria-hidden="true"></i>
+        <span id="busuanzi_value_page_pv"></span> 次
+      </span>
+    
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">苹果电脑使用笔记</h1>
+            
+            <div class="markdown-body">
+              <p>最近入手了一台苹果电脑（也有两个月了），成年人的第一台苹果电脑，Macbook Pro，M2芯片，Ventura 13.3。</p>
+<p>Mac电脑的很多操作跟Windows电脑的不一样，导致经常按错 Ctrl 和 Command 或 Shift 和 中英文切换键，又比如用Windows电脑时习惯性刷新桌面，Mac没有这操作（或者说没必要），也没有右键新建文件等等。所以有必要好好学学，习惯下，提高效率。</p>
+<p>Mac电脑也有一些缺点：没多少游戏，一些安全工具只支持win系统，部分软件不支持M2芯片。</p>
+<p>但是用起来是真的流畅。</p>
+<p>本文记录下我的个人常用操作，配置，和常用软件下载安装。</p>
+<h1 id="主桌面介绍"><a href="#主桌面介绍" class="headerlink" title="主桌面介绍"></a>主桌面介绍</h1><p>顶部菜单栏：</p>
+<ul>
+<li>去掉Siri：系统设置 - 控制中心 - Siri - 不在菜单栏中显示</li>
+<li>调整菜单栏APP顺序：Command + 鼠标拖动</li>
+</ul>
+<p>右侧通知中心：两指从触控板最右向左滑 或 点击顶部菜单栏右侧的时间。（我就设置为显示个天气和日历）</p>
+<p>控制中心：在顶部菜单栏右侧的一个按钮</p>
+<p>底部程序坞：对于不常用的软件可以右键 - 选项 - 从程序坞中移除</p>
+<p>调度中心：三指上滑打开</p>
+<p>左侧台前调度：可在控制中心里打开。打开了这个，就不能同时显示多个不同应用的窗口了，但可以使用分屏。</p>
+<p>启动台：拇指和另外三根手指合拢</p>
+<p>触发角：屏幕的四个角，系统设置 - 桌面与程序坞 - 触发角。 可设置一两个常用的，如显示桌面</p>
+<h1 id="设置"><a href="#设置" class="headerlink" title="设置"></a>设置</h1><ul>
+<li>将光标移动速度调快（默认的设置移动得慢，在终端下移动尤为明显）：设置 - 键盘， 将“键重复速率”调到快，将“重复前延迟”调到短。前者对应移动速度，后者移动前的反应时间。</li>
+<li>修改电脑名称：系统设置 - 通用 - 关于本机，直接在名称一栏打字修改； 修改本地主机名：系统设置 - 通用 - 共享，修改本地主机名</li>
+<li>访达里显示所有文件的扩展名：设置 - 高级 - 显示所有文件扩展名</li>
+</ul>
+<h1 id="操作与快捷键"><a href="#操作与快捷键" class="headerlink" title="操作与快捷键"></a>操作与快捷键</h1><p>按F1键：按住Fn再点击键盘上的触控栏（有的Mac电脑没触控栏，这种情况估计是按Fn键跟F1吧）</p>
+<p>尽量避免单击触控板：</p>
+<ul>
+<li>用其他操作来代替单击：三指向上滑动和向下滑动来切换应用（不用单击触控板）</li>
+<li>可以设置：系统设置 - 触控板 - 触控板 - 轻点来点按， 这样就不用物理按下触控板（但可能会误触）</li>
+</ul>
+<p>Safari：</p>
+<ul>
+<li>切换标签页：Control + Tab 或 Control + Shift + Tab。 通过快捷键来切换，感觉也不是很方便</li>
+<li>在新标签页中打开网页：按住 Command 键再点链接</li>
+</ul>
+<p>自带终端：</p>
+<ul>
+<li>将光标移动到行首（Control + A）或行尾（Control + E）</li>
+<li>向左或向右移动一个单词：Option + 方向键</li>
+<li>删除一个单词：Control + W</li>
+<li>删除整行：Control + U（这是zsh的快捷键，在bash下，这个快捷键是删除光标到行首的字符）</li>
+<li>删除光标到行首的字符：Meta + W （终端 - 设置 - 描述文件 - 键盘 - 将Option作为Meta键）</li>
+</ul>
+<p>访达：</p>
+<ul>
+<li>长按 Option 键：显示当前路径</li>
+<li>Command + Option + C：复制当前路径</li>
+<li>Command + 退格键：删除文件</li>
+<li>可右键新建目录，不可新建文件。要新建文件可用其他软件，如VSCode等，或 touch 命令</li>
+<li>复制粘贴文件：C<em>ommand</em> + <em>C ，</em> C<em>ommand</em> + V。 剪切粘贴文件：C<em>ommand</em> + <em>C ，</em> C<em>ommand</em> + Option + V</li>
+</ul>
+<p>归档实用工具：</p>
+<ul>
+<li>macOS自带的归档实用工具可以zip压缩和解压</li>
+<li>不支持rar格式压缩包</li>
+<li>不支持加密压缩</li>
+<li>可以安装 bandizip 或其他压缩软件</li>
+<li>对于rar格式压缩，可安装rar命令： <code>brew install rar</code></li>
+</ul>
+<p>其他快捷键：</p>
+<ul>
+<li>与Windows系统不同的是，Mac下有单独的中英文切换键，而不是用Shift切换中英文</li>
+<li>Command + 空格键：显示聚焦搜索</li>
+<li>Command + W：关闭窗口</li>
+<li>Command + Q：关闭程序</li>
+<li>Option + Command + D：显示/隐藏底部程序坞</li>
+<li>Control  + Command + Q：立即锁定屏幕</li>
+<li>长按 Command + 空格键：启动Siri （估计快捷键冲突了，在我电脑上按这个没反应）</li>
+<li>Fn + F：全屏</li>
+<li>Fn + 退格键：删除右侧字符</li>
+<li>Command + 方向键：移到行首或行尾</li>
+</ul>
+<p>（记不住那么多快捷键，容易搞混，选一些常用的记住，其余的用其他操作代替）</p>
+<h1 id="文件"><a href="#文件" class="headerlink" title="文件"></a>文件</h1><ul>
+<li>Mach-O（Mach Object File Format）格式文件：可执行文件和动态库都是这个格式的文件。由dyld程序加载</li>
+<li>.dylib后缀为动态库文件，.a后缀为静态库文件。 执行 <code>otool -l /usr/sbin/tcpdump</code> ， 查看Mach -0 文件的加载命令信息，可以看到tcpdump会加载<code>/usr/lib/libpcap.A.dylib</code> ，但实际上并没有这个文件。原因：<a target="_blank" rel="noopener" href="https://developer.apple.com/documentation/macos-release-notes/macos-big-sur-11_0_1-release-notes">https://developer.apple.com/documentation/macos-release-notes/macos-big-sur-11_0_1-release-notes</a> 的 62986286 部分，可知苹果系统将所有系统提供的库放到了动态链接缓存</li>
+<li>icns文件：图标文件。读写该文件的工具：<a target="_blank" rel="noopener" href="https://github.com/relikd/icnsutil">https://github.com/relikd/icnsutil</a></li>
+<li>dmg文件：文件查看：7z软件、hidutil。双击打开dmg文件，系统将会将其挂载为一个虚拟磁盘（挂载在 /Volumes 目录下），并在 Finder 中“位置”一栏里显示（默认也会在桌面显示，可在访达-设置-通用-取消勾选外置磁盘 来关闭显示）。运行完后直接推出即可。若在Finder里的位置对磁盘映像右键 - 不在Finder显示后，可以在磁盘工具里还能看到，可在这推出磁盘。</li>
+<li>.DS_Store文件：Desktop Services Store（桌面服务存储），用来存储这个文件夹的显示属性的：比如文件图标的摆放位置。</li>
+<li>.app目录：软件包，双击运行。</li>
+</ul>
+<h1 id="目录"><a href="#目录" class="headerlink" title="目录"></a>目录</h1><ul>
+<li>/Applications： 应用程序目录。该目录存放了系统与用户安装的应用程序，启动台（Launchpad）里可以看到所有安装的程序。</li>
+<li>/Library： 存放系统应用的数据及文档信息。</li>
+<li>/Network： 网络邻居虚拟目录。</li>
+<li>/System/Library： 存放了系统运行的重要组件，如框架与内核模块。一些系统内置的第三方程序也在该目录下，如Perl</li>
+<li>/Users: 所有用户的主目录都位于此目录下</li>
+<li>/Volumes: 可移动媒体、磁盘、dmg镜像的挂载点。</li>
+<li>~/Library/Preferences/<appid>/：存储应用程序的plist文件</li>
+<li>~/Library/Containers/：每个开启了沙盒的软件都会在此目录下生成一个以程序标识符命名的子目录，此目录下会将一些系统特定的目录以软链接的形式创建在此目录中的Data目录下。</li>
+<li>~/Library/Application Support/Core Data：另一种软件保存数据的地方，它本质上是对Sqlite数据库访问的一层外包装</li>
+</ul>
+<h1 id="软件"><a href="#软件" class="headerlink" title="软件"></a>软件</h1><h3 id="ClashX"><a href="#ClashX" class="headerlink" title="ClashX"></a>ClashX</h3><p><a target="_blank" rel="noopener" href="https://clashx.org/clashx-download/">https://clashx.org/clashx-download/</a></p>
+<ul>
+<li><p>配置 - 托管配置 - 管理： 添加订阅地址</p>
+</li>
+<li><p>配置 - 托管配置，取消勾选自动更新：基于安全考虑，且不需要及时更新机场的节点变动、剩余流量和到期时间，可以取消掉</p>
+</li>
+<li><p>设置为系统代理的原理是，修改了系统设置。也可自己手动设置系统代理，在 系统设置 - 网络，选择一个网络设置代理</p>
+</li>
+<li><p>控制台 - 设置 - 代理模式：有三种：全局、规则、直连</p>
+</li>
+<li><p>控制台 - 代理 - 策略组：策略组（proxy-groups）有：延迟最低、故障转移、手动选择、负载均衡 四种模式：</p>
+<ul>
+<li>自动选择（url-test），每隔一段时间进行延迟测试，选择延迟最低的节点。</li>
+<li>故障转移（fallback），每次都选组内第一个节点，无法使用再换到第二个，依次类推。</li>
+<li>手动选择（select），手动选节点。</li>
+<li>负载均衡（load-balance），每个节点都用用，由于很多机场都有连接数的限制，因此实际使用较少。</li>
+</ul>
+<p>当代理模式为“规则”时，根据规则匹配使用指定的策略组</p>
+</li>
+</ul>
+<h3 id="golang多版本"><a href="#golang多版本" class="headerlink" title="golang多版本"></a>golang多版本</h3><p><a target="_blank" rel="noopener" href="https://github.com/voidint/g">https://github.com/voidint/g</a></p>
+<ol>
+<li><p>下载<a target="_blank" rel="noopener" href="https://github.com/voidint/g/releases">release</a>的二进制压缩包</p>
+</li>
+<li><p>将压缩包解压至<code>PATH</code>环境变量目录下（推荐<code>~/.g/bin</code>目录），将<code>~/.g/bin/g</code>重命名为<code>~/.g/bin/gvm</code>，（因为<code>g</code>太短容易冲突）</p>
+</li>
+<li><p>将所需的环境变量写入<code>~/.g/env</code>文件</p>
+<figure class="highlight bash"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs bash"><span class="hljs-meta">#!/bin/sh</span><br><span class="hljs-comment"># g shell setup</span><br><span class="hljs-built_in">export</span> GOROOT=<span class="hljs-string">&quot;<span class="hljs-variable">$&#123;HOME&#125;</span>/.g/go&quot;</span><br><span class="hljs-built_in">export</span> PATH=<span class="hljs-string">&quot;<span class="hljs-variable">$&#123;HOME&#125;</span>/.g/bin:<span class="hljs-variable">$&#123;GOROOT&#125;</span>/bin:<span class="hljs-variable">$PATH</span>&quot;</span><br><span class="hljs-built_in">export</span> G_MIRROR=https://golang.google.cn/dl/<br></code></pre></div></td></tr></table></figure>
+</li>
+<li><p>将<code>~/.g/env</code>导入到shell环境配置文件：<code>vim ~/.bashrc</code>：</p>
+<figure class="highlight bash"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs bash"><span class="hljs-comment"># g shell setup</span><br><span class="hljs-keyword">if</span> [ -f <span class="hljs-string">&quot;<span class="hljs-variable">$&#123;HOME&#125;</span>/.g/env&quot;</span> ]; <span class="hljs-keyword">then</span><br>    . <span class="hljs-string">&quot;<span class="hljs-variable">$&#123;HOME&#125;</span>/.g/env&quot;</span><br><span class="hljs-keyword">fi</span><br></code></pre></div></td></tr></table></figure>
+</li>
+<li><p>启用环境变量：<code>source ~/.bashrc</code></p>
+</li>
+<li><p>安装指定版本的golang：<code>gvm install 1.20.4</code></p>
+</li>
+</ol>
+<h3 id="多Java版本管理"><a href="#多Java版本管理" class="headerlink" title="多Java版本管理"></a>多Java版本管理</h3><ol>
+<li>在 <a target="_blank" rel="noopener" href="https://www.oracle.com/java/technologies/downloads/archive/">https://www.oracle.com/java/technologies/downloads/archive/</a> 下载  Java SE 8 (8u202 and earlier) 和 Java SE 20 。 下载Java SE Development Kit 的 MacOS dmg包（M2芯片选AARCH64架构），双击启动，安装。</li>
+<li>vim ~/.bashrc：</li>
+</ol>
+<figure class="highlight jsx"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs jsx"># <span class="hljs-title class_">Java</span> config<br><span class="hljs-keyword">export</span> <span class="hljs-variable constant_">JAVA_8_HOME</span>=<span class="hljs-string">&quot;/Library/Java/JavaVirtualMachines/jdk1.8.0_202.jdk/Contents/Home&quot;</span><br><span class="hljs-keyword">export</span> <span class="hljs-variable constant_">JAVA_20_HOME</span>=<span class="hljs-string">&quot;/Library/Java/JavaVirtualMachines/jdk-20.jdk/Contents/Home&quot;</span><br><br># config <span class="hljs-title class_">Java</span> alias<br>alias jdk8=<span class="hljs-string">&quot;export JAVA_HOME=$JAVA_8_HOME&quot;</span><br>alias jdk20=<span class="hljs-string">&quot;export JAVA_HOME=$JAVA_20_HOME&quot;</span><br><br># config <span class="hljs-keyword">default</span> jdk<br><span class="hljs-keyword">export</span> <span class="hljs-variable constant_">JAVA_HOME</span>=$JAVA_8_HOME<br><span class="hljs-keyword">export</span> <span class="hljs-variable constant_">PATH</span>=<span class="hljs-string">&quot;$JAVA_HOME:$PATH&quot;</span><br></code></pre></div></td></tr></table></figure>
+
+<ol>
+<li>在 <code>~/.zshrc</code> 里加上  <code>source ~/.bashrc</code> 这句</li>
+</ol>
+<h3 id="多npm版本管理"><a href="#多npm版本管理" class="headerlink" title="多npm版本管理"></a>多npm版本管理</h3><p>安装nvm：<a target="_blank" rel="noopener" href="https://github.com/nvm-sh/nvm">https://github.com/nvm-sh/nvm</a></p>
+<figure class="highlight bash"><table><tr><td class="gutter hljs"><div class="hljs code-wrapper"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></div></td><td class="code"><div class="hljs code-wrapper"><pre><code class="hljs bash">curl -o- &lt;https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.3/install.sh&gt; | bash<br><br><span class="hljs-comment"># vim ~/.bashrc ，加上：</span><br><br><span class="hljs-built_in">export</span> NVM_DIR=<span class="hljs-string">&quot;<span class="hljs-variable">$HOME</span>/.nvm&quot;</span><br>[ -s <span class="hljs-string">&quot;<span class="hljs-variable">$NVM_DIR</span>/nvm.sh&quot;</span> ] &amp;&amp; \\. <span class="hljs-string">&quot;<span class="hljs-variable">$NVM_DIR</span>/nvm.sh&quot;</span>  <span class="hljs-comment"># This loads nvm</span><br>[ -s <span class="hljs-string">&quot;<span class="hljs-variable">$NVM_DIR</span>/bash_completion&quot;</span> ] &amp;&amp; \\. <span class="hljs-string">&quot;<span class="hljs-variable">$NVM_DIR</span>/bash_completion&quot;</span>  <span class="hljs-comment"># This loads nvm bash_completion</span><br><br><span class="hljs-comment"># 安装nodejs、npm</span><br>nvm install node<br><br><span class="hljs-comment"># 安装hexo</span><br>npm install hexo-cli -g<br>npm install hexo-deployer-git --save<br></code></pre></div></td></tr></table></figure>
+
+<h3 id="Tabby终端"><a href="#Tabby终端" class="headerlink" title="Tabby终端"></a>Tabby终端</h3><p>Tabby终端：<a target="_blank" rel="noopener" href="https://github.com/Eugeny/tabby，">https://github.com/Eugeny/tabby，</a> 基于nodejs electron编写的，占内存多。之所以选这个终端软件，是因为当时看它Github介绍那图片，以为不用设置一堆就那么好看了，结果还是要装oh-my-zsh，配置一堆。</p>
+<p>一些设置：</p>
+<ul>
+<li>Preference - 应用 - Tabby集成。 Finder 右键一个目录 - 快速操作 - 自定义， 将Tabby勾选上</li>
+<li>Preference - 配色方案，选一个背景颜色看起来可以的就行</li>
+<li>该终端下Command + 左/右方向键，光标移动到行首或行尾（该快捷键在其他应用下的也是一样的效果）</li>
+<li>删除光标到行首的字符：默认按Control + U是删除整行，无论光标在哪个位置。 点 Tabby - Preferences - 快捷键 - 删除整行，将该快捷键设置为Control + U即可</li>
+</ul>
+<p>zsh：MacOS默认使用zsh</p>
+<ul>
+<li>兼容Bash</li>
+<li>命令选项补全：如输入<code>git</code> 再按TAB键</li>
+<li>等等特性</li>
+</ul>
+<p>oh-my-zsh安装：<a target="_blank" rel="noopener" href="https://ohmyz.sh/#install">https://ohmyz.sh/#install</a> （运行它的安装脚本会被覆盖掉 <code>~/.zshrc</code> ，所以需事先备份下这个文件）</p>
+<ul>
+<li>禁用自动更新：修改<code>~/.zshrc</code>，取消注释 <code>zstyle &#39;:omz:update&#39; mode disabled</code></li>
+<li>关掉 URL 反斜杠转义：修改<code>~/.zshrc</code>，取消注释 <code>DISABLE_MAGIC_FUNCTIONS=true</code> ， （就是在粘贴URL地址时一些特殊符号前面会加上反斜杠的问题）</li>
+<li>安装p10k主题，参考：<a target="_blank" rel="noopener" href="https://github.com/romkatv/powerlevel10k#oh-my-zsh，">https://github.com/romkatv/powerlevel10k#oh-my-zsh，</a> 新建一个终端或者执行<code>p10k configure</code>配置，按提示进行配置（在选择编码时，选择Unicode，主题会好看些）。</li>
+<li>若p10k的prompt的unicode图标显示不出，但在上一步的<code>p10k configure</code>过程中明明是可以显示的。 则配置下字体： Tabby - Preferences - 外观 - 字体：选择Hack Nerd Font Mono。</li>
+<li>若macOS自带的终端应用里，p10k的unicode图标显示不出，则 终端 - 设置 - 描述文件，更改字体为 Hack Nerd font Mono。</li>
+<li>附：安装hack-nerd字体，参考：<a target="_blank" rel="noopener" href="https://github.com/ryanoasis/nerd-fonts#option-4-homebrew-fonts。">https://github.com/ryanoasis/nerd-fonts#option-4-homebrew-fonts。</a> （似乎MacOS默认已有该字体了，可打开“字体库app”确认下）</li>
+</ul>
+<h3 id="Parallels-Desktop"><a href="#Parallels-Desktop" class="headerlink" title="Parallels Desktop"></a>Parallels Desktop</h3><p>版本：<code>https://download.parallels.com/desktop/v18/18.1.1-53328/ParallelsDesktop-18.1.1-53328.dmg</code></p>
+<p>操作：</p>
+<ul>
+<li>打开多个虚拟机：窗口 - 控制中心</li>
+<li>取消自动更新：偏好设置 - 通用 - 检查更新， 从不</li>
+<li>有bug，容易卡住，也不知道怎么回事，如果遇到就重启虚拟机</li>
+</ul>
+<p>镜像下载：</p>
+<ul>
+<li><p>Kali Linux：渗透使用。下载iso镜像，Apple Silicon (ARM64)版： <a target="_blank" rel="noopener" href="https://www.kali.org/get-kali/#kali-installer-images。Kali">https://www.kali.org/get-kali/#kali-installer-images。Kali</a> 2023.1 ARM64</p>
+<ul>
+<li>添加虚拟机过程中，取消勾选“在Mac桌面上创建别名”，勾选“安装前设定”，可设置下内存之类的</li>
+<li>kali虚拟机安装过程中：位置选中国（这样系统字体才不是繁体字）</li>
+<li>kali虚拟机安装后：安装 Parallels Tools</li>
+</ul>
+<p>上面这种下载Kali 2023.1 ARM64镜像再自己安装的方式，虚拟机内会出现鼠标失灵、键盘失灵，或键盘按一个字符就输了三次该字符的问题。所以还是直接用Paralles Desktop提供的kali 2022.2镜像。</p>
+<ul>
+<li>执行完 <code>sudo apt update</code> 和 <code>sudo apt upgrade</code> ， 打个快照</li>
+<li>安装中文输入法：<code>apt-get install fcitx fcitx-googlepinyin</code>。点击右上角键盘按钮 - Configure - Input Method，添加一项Google Pinyin，并将其排到最顶。再点击 Global Config 栏，设置 Trigger Input Method 的快捷键为 LShift 和 RShift ，这样就可以用Shift键切换中英文了。</li>
+<li>取消共享：默认会将宿主机Mac的一些文件共享给Linux虚拟机。操作 - 配置 - 选项 - 共享 - 共享Mac，取消勾选“与Linux共享自定义Mac文件”等。</li>
+</ul>
+</li>
+<li><p>Windows 11：逆向、渗透使用。</p>
+<ul>
+<li>取消共享：默认会将宿主机Mac的一些文件共享给Win虚拟机，Win虚拟机的文件也可以被宿主机访问（后者我就不取消了）。 操作 - 配置 - 选项 - 共享 - 共享Mac，取消勾选“镜像Mac和Windows用户文件夹”（共享Mac：宿主机Mac的一些文件可被Win虚拟机访问；共享Windows：Win虚拟机下的文件可被宿主机Mac访问。）</li>
+<li>文件传输：可以直接拖动文件或Command + C 、 Command + V</li>
+</ul>
+</li>
+<li><p>MacOS 13：</p>
+<ul>
+<li>Parallels Desktop对MacOS 虚拟机没有设置按钮，要设置内存、网络等需在MacOS虚拟机里用命令去设置，参考：<a target="_blank" rel="noopener" href="https://kb.parallels.com/128842">https://kb.parallels.com/128842</a></li>
+<li>开启文件共享，参考： <a target="_blank" rel="noopener" href="https://sspai.com/post/61388。">https://sspai.com/post/61388。</a> 在宿主机连接共享文件时总连不上（点连接按钮时窗口抖动了几下），通过重启虚拟机解决。</li>
+<li>MacOS 下的 Parallels Tools ，目前仅支持 共享粘贴板 的功能</li>
+<li>关闭Mac虚拟机的SIP机制：在 Parallels Desktop 控制台，右键MacOS - 以恢复模式启动，点击菜单栏打开终端，再执行 <code>csrutil disable</code> 或 <code>csrutil enable --without dtrace</code> （只关闭SIP对dtrace的限制），重启虚拟机</li>
+</ul>
+</li>
+</ul>
+<h3 id="其他"><a href="#其他" class="headerlink" title="其他"></a>其他</h3><p>还有其它一些免费的软件：</p>
+<ul>
+<li>Homebrew</li>
+<li>XCode</li>
+<li>VSCode</li>
+<li>Chrome</li>
+<li>Notion笔记（<a target="_blank" rel="noopener" href="https://www.notion.so/desktop）">https://www.notion.so/desktop）</a></li>
+</ul>
+<p>一些软件可以通过重置试用期来达到无限使用，如：</p>
+<ul>
+<li>Navicat Premium（<a target="_blank" rel="noopener" href="https://www.navicat.com/en/download/navicat-premium）：[https://gitee.com/ProgHub/unlimited_trial_navicat_premium/blob/master/Mac/reset_navicat.sh]">https://www.navicat.com/en/download/navicat-premium）：[https://gitee.com/ProgHub/unlimited_trial_navicat_premium/blob/master/Mac/reset_navicat.sh]</a>(<a target="_blank" rel="noopener" href="https://gitee.com/ProgHub/unlimited_trial_navicat_premium/blob/master/Mac/">https://gitee.com/ProgHub/unlimited_trial_navicat_premium/blob/master/Mac/</a> reset_navicat_by_52pojie.sh)</li>
+<li>Beyond Compare（<a target="_blank" rel="noopener" href="https://www.scootersoftware.com/download）：`rm">https://www.scootersoftware.com/download）：`rm</a> ~/Library/Application\ Support/Beyond\ Compare/registry.dat`</li>
+<li>010 Editor（<a target="_blank" rel="noopener" href="https://www.sweetscape.com/download/010editor/">https://www.sweetscape.com/download/010editor/</a> ）：<code>rm ~/.config/SweetScape/010\\ Editor.ini</code></li>
+</ul>
+<p>有的试用期到了还能用，不知道怎么回事。像：</p>
+<ul>
+<li>PasteNow（<a target="_blank" rel="noopener" href="https://pastenow.app/）：这是个粘贴板历史软件">https://pastenow.app/）：这是个粘贴板历史软件</a></li>
+</ul>
+<p>有的网上有公开如何破解：</p>
+<ul>
+<li>Typora（<a target="_blank" rel="noopener" href="https://typora.io/releases/all）：https://bbs.kanxue.com/thread-273420.htm">https://typora.io/releases/all）：https://bbs.kanxue.com/thread-273420.htm</a></li>
+<li>Parallels Desktop：<a target="_blank" rel="noopener" href="https://git.icrack.day/somebasj/ParallelsDesktopCrack">https://git.icrack.day/somebasj/ParallelsDesktopCrack</a></li>
+<li>Burpsuite Pro：<a target="_blank" rel="noopener" href="https://github.com/h3110w0r1d-y/BurpLoaderKeygen">https://github.com/h3110w0r1d-y/BurpLoaderKeygen</a></li>
+</ul>
+<p>有的网上找个注册码就行了：</p>
+<ul>
+<li>Proxifier for Mac v3（<a target="_blank" rel="noopener" href="https://www.proxifier.com/download/）。">https://www.proxifier.com/download/）。</a></li>
+</ul>
+<p>或者tb买激活码：</p>
+<ul>
+<li>JetBrain的IDE，GoLand、PyCharm、IDEA等</li>
+</ul>
+<p>有条件的话就支持正版吧。</p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/MacOS/">MacOS</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2023/09/27/burpsuite-extension-menu-level/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Burpsuite 插件开发 - 修改右键菜单层级</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2021/03/04/codeql-exercises-from-ql-tutorial/">
+                        <span class="hidden-mobile">CodeQL官方教程中几道QL练习题</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments" lazyload>
+                
+                  
+                
+                
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'Ovi3/Ovi3.github.io');
+      s.setAttribute('issue-term', 'title');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+  <div class="statistics">
+    
+    
+
+    
+      
+        <!-- 不蒜子统计PV -->
+        <span id="busuanzi_container_site_pv" style="display: none">
+            总访问量 
+            <span id="busuanzi_value_site_pv"></span>
+             次
+          </span>
+      
+      
+        <!-- 不蒜子统计UV -->
+        <span id="busuanzi_container_site_uv" style="display: none">
+            总访客数 
+            <span id="busuanzi_value_site_uv"></span>
+             人
+          </span>
+      
+    
+  </div>
+
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js" ></script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+<script>
+
+function observeAndDisplay(sourceId, targetId) {
+  if (document.getElementById(sourceId)) {
+    new MutationObserver(m => {
+      m.forEach(m => {
+        if (m.target.textContent.trim() !== '') {
+          document.getElementById(targetId).style.display = 'inline';
+        }
+      });
+    })
+      .observe(
+        document.getElementById(sourceId),
+        { childList: true, characterData: true, subtree: true }
+      );
+  }
+
+}
+
+observeAndDisplay('busuanzi_value_page_pv', 'busuanzi_container_page_pv');
+observeAndDisplay('busuanzi_value_site_pv', 'busuanzi_container_site_pv');
+observeAndDisplay('busuanzi_value_site_uv', 'busuanzi_container_site_uv');
+
+
+</script>
+
+  <script defer src="https://cn.vercount.one/js?i=/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

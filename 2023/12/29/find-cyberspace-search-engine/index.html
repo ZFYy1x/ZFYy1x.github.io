@@ -1,0 +1,512 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=&#34;dark&#34;>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/shinchan.png">
+  <link rel="icon" href="/img/shinchan.png">
+  <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="description" content="Ovie博客,Ovi3博客">
+  <meta name="author" content="Ovie">
+  <meta name="keywords" content="Ovie博客,Ovi3博客,个人博客,技术分享,网络安全,安全研发,安全研究,渗透测试">
+  <meta name="google-site-verification" content="eW4bY2KPHT_B6-DOYCuxmzwdjlQ34WXHQ4X3G__8cKY" />
+  
+  <title>如何找出网络空间测绘引擎扫描客户端IP - Ovie博客</title>
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css" />
+
+
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/github-markdown-css@4.0.0/github-markdown.min.css" />
+  <link  rel="stylesheet" href="/lib/hint/hint.min.css" />
+
+  
+    
+    
+      
+      <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@10.7.2/styles/vs2015.min.css" />
+    
+  
+
+  
+    <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.css" />
+  
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_ba1fz6golrf.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_kmeydafke9r.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+<!-- 自定义样式保持在最底部 -->
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"ovi3.github.io","root":"/","version":"1.8.11","typing":{"enable":false,"typeSpeed":70,"cursorChar":"_","loop":false},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"right","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"copy_btn":true,"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+<meta name="generator" content="Hexo 5.4.2"><link rel="alternate" href="/atom.xml" title="Ovie博客" type="application/atom+xml">
+<link rel="alternate" href="/rss2.xml" title="Ovie博客" type="application/rss+xml">
+</head>
+
+
+<body>
+  <header style="height: 60vh;">
+    <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand"
+       href="/">&nbsp;<strong>Ovie</strong>&nbsp;</a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/atom.xml">
+                <i class="iconfont icon-rss-fill"></i>
+                 
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" data-toggle="modal" data-target="#modalSearch">&nbsp;<i
+                class="iconfont icon-search"></i>&nbsp;</a>
+          </li>
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+    <div class="banner" id="banner" parallax=true
+         style="background: url('https://api.boxmoe.com/random.php?3') no-repeat center center;
+           background-size: cover;">
+      <div class="full-bg-img">
+        <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+          <div class="page-header text-center fade-in-up">
+            <span class="h2" id="subtitle" title="如何找出网络空间测绘引擎扫描客户端IP">
+              
+                如何找出网络空间测绘引擎扫描客户端IP
+              
+            </span>
+
+            
+              <div class="mt-3">
+  
+  
+    <span class="post-meta">
+      <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+      <time datetime="2023-12-29 14:50" pubdate>
+        2023年12月29日 下午
+      </time>
+    </span>
+  
+</div>
+
+<div class="mt-1">
+  
+    
+    <span class="post-meta mr-2">
+      <i class="iconfont icon-chart"></i>
+      670 字
+    </span>
+  
+
+  
+
+  
+  
+    
+      <!-- 不蒜子统计文章PV -->
+      <span id="busuanzi_container_page_pv" style="display: none">
+        <i class="iconfont icon-eye" aria-hidden="true"></i>
+        <span id="busuanzi_value_page_pv"></span> 次
+      </span>
+    
+  
+</div>
+
+            
+          </div>
+
+          
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="d-none d-lg-block col-lg-2"></div>
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div class="py-5" id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">如何找出网络空间测绘引擎扫描客户端IP</h1>
+            
+            <div class="markdown-body">
+              <p>年底了，水一篇文章。目前的网络空间测绘引擎有fofa、shodan、zoomeye、hunter、censys等，这篇文章主要写写如何找出它们的扫描客户端IP与UDP probe数据包。</p>
+<h3 id="自己公开"><a href="#自己公开" class="headerlink" title="自己公开"></a>自己公开</h3><p>比如 Censys 公开了自己的扫描客户端ip：<a target="_blank" rel="noopener" href="https://support.censys.io/hc/en-us/articles/360043177092-Opt-Out-of-Data-Collection">https://support.censys.io/hc/en-us/articles/360043177092-Opt-Out-of-Data-Collection</a></p>
+<h3 id="第三方平台"><a href="#第三方平台" class="headerlink" title="第三方平台"></a>第三方平台</h3><p>网上一些平台也收集了一些：</p>
+<ul>
+<li>fapro ：<a target="_blank" rel="noopener" href="https://faweb.fofapro.com/classification/">https://faweb.fofapro.com/classification/</a></li>
+<li>GreyNoise：<a target="_blank" rel="noopener" href="https://viz.greynoise.io/query?gnql=actor%3AShodan.io">https://viz.greynoise.io/query?gnql=actor%3AShodan.io</a> ， 这个站点还分析了相似IP， 如 <a target="_blank" rel="noopener" href="https://viz.greynoise.io/ip/159.65.111.154">https://viz.greynoise.io/ip/159.65.111.154</a> 这个 BinaryEdge 的ip，点击页面的View Similar IPs 可以大概看看可能是 BinaryEdge 的其他IP（该功能需登录订阅）</li>
+</ul>
+<p>通过搜索引擎搜索也可以搜索到一些，如shodan扫描器的ip：</p>
+<ul>
+<li><a target="_blank" rel="noopener" href="https://gist.github.com/jfqd/4ff7fa70950626a11832a4bc39451c1c">https://gist.github.com/jfqd/4ff7fa70950626a11832a4bc39451c1c</a></li>
+<li><a target="_blank" rel="noopener" href="https://wiki.ipfire.org/configuration/firewall/blockshodan">https://wiki.ipfire.org/configuration/firewall/blockshodan</a></li>
+</ul>
+<h3 id="回显ip的服务"><a href="#回显ip的服务" class="headerlink" title="回显ip的服务"></a>回显ip的服务</h3><p>互联网上有一些服务会输出来访者的ip，那如何找到这类服务呢。</p>
+<p>利用公开的扫描客户端IP去它的搜索引擎里去搜索。  如：</p>
+<ul>
+<li>使用shodan的ip去shodan搜索 <a target="_blank" rel="noopener" href="https://www.shodan.io/search?query=%2271.6.167.142%22+-Ethereum+-NTP">“71.6.167.142” -Ethereum -NTP</a>，  可提取出这个特征 <a target="_blank" rel="noopener" href="https://www.shodan.io/search?query=http.html%3A%22Outlook+Logon%22+http.html%3A%22Never+gonna+give+you+up%22">http.html:”Outlook Logon” http.html:”Never gonna give you up”</a> 的服务会回显IP（这些服务看着好像是蜜罐）</li>
+<li>使用censys公开的网段去censys搜索，<a target="_blank" rel="noopener" href="https://search.censys.io/search?resource=hosts&sort=RELEVANCE&per_page=25&virtual_hosts=EXCLUDE&q=services.http.response.body%3A+%22162.142.125%22&ref=censysgpt">services.http.response.body: “162.142.125”</a>，可以提取出一些特征，如：<a target="_blank" rel="noopener" href="https://search.censys.io/search?resource=hosts&sort=RELEVANCE&per_page=25&virtual_hosts=EXCLUDE&q=services%3A%28http.response.body%3A+%22%E4%BD%A0%E7%9A%84IP%EF%BC%9A%22+and+port%3A80%29">services:(http.response.body: “你的IP：” and port:80)</a></li>
+</ul>
+<p>而Fofa会将自己的IP给替换成 <code>*.*.*.*</code>，像 <a target="_blank" rel="noopener" href="https://fofa.info/result?qbase64=aXMgbm90IGFsbG93ZWQgIHRvIGNvbm5lY3QgdG8gdGhpcyBNeVNRTCBzZXJ2ZXI%3D">“is not allowed to connect to this MySQL server”</a> 。 那是不是可以用 <code>&quot;*.*.*.*&quot;</code>搜索出那些回显IP的服务呢。测试了下并不行，估计是分词搜索的原因。</p>
+<p>而zoomeye会把自己的ip替换为<code>xxx.xxx.xxx.xxx</code>，可以使用 <a target="_blank" rel="noopener" href="https://www.zoomeye.org/searchResult?q=%22xxx.xxx.xxx.xxx%22">“xxx.xxx.xxx.xxx”</a>去搜索。</p>
+<p>后面我也注意到，其实fofa跟zoomeye的替换并不全面。fofa没有替换http响应里的ip，像 <a target="_blank" rel="noopener" href="https://fofa.info/result?qbase64=IkJhZCBSZXF1ZXN0IiAmJiAiaXAi">“Bad Request” &amp;&amp; “ip”</a> ，<a target="_blank" rel="noopener" href="https://fofa.info/result?qbase64=aGVhZGVyPSJ4LXJlcXVlc3QtaXAiIA%3D%3D">header=”x-request-ip”</a> 。且对于一些被截取、被编码的ip或其他格式的ip，也不会替换到。</p>
+<p>要找到这些回显IP的服务，也可以自己全网扫一遍看哪些服务会回显自己的ip，记录下来。</p>
+<h3 id="UDP-Probe数据包"><a href="#UDP-Probe数据包" class="headerlink" title="UDP Probe数据包"></a>UDP Probe数据包</h3><p>对于UDP服务的识别需要发送一个该协议的probe包，在互联网上有一些机器起的是echo服务，就是你发什么它就回复什么。像 <a target="_blank" rel="noopener" href="https://fofa.info/result?qbase64=YmFzZV9wcm90b2NvbD0idWRwIiAmJiBwb3J0PSIyNDI1IiAmJiBiYW5uZXI9InRlc3Q6UEM6MzI6Z3JhYiB0ZXN0Ig%3D%3D">base_protocol=”udp” &amp;&amp; port=”2425” &amp;&amp; banner=”test:PC:32:grab test”</a> ，<a target="_blank" rel="noopener" href="https://fofa.info/result?qbase64=IkdFVCAvIEhUVFAvMS4xIiAmJiAiQWNjZXB0OiAqLyoiICYmIHByb3RvY29sPSJ1bmtub3duIg%3D%3D">“GET / HTTP/1.1” &amp;&amp; “Accept: <em>/</em>“ &amp;&amp; protocol=”unknown”</a> ，<a target="_blank" rel="noopener" href="https://hunter.qianxin.com/list?search=protocol%3D%3D%22echo%22&conditions=">protocol==”echo”</a> 。区分出这些机器后，再用这些机器ip去搜索可以大概知道各扫描客户端对不同UDP端口发的是什么UDP包。</p>
+<h3 id="部署蜜罐"><a href="#部署蜜罐" class="headerlink" title="部署蜜罐"></a>部署蜜罐</h3><p>自己部署蜜罐成本大，没弄过。</p>
+
+            </div>
+            <hr>
+            <div>
+              <div class="post-metas mb-3">
+                
+                
+                  <div class="post-meta">
+                    <i class="iconfont icon-tags"></i>
+                    
+                      <a class="hover-with-bg" href="/tags/%E7%BD%91%E7%BB%9C%E7%A9%BA%E9%97%B4%E6%B5%8B%E7%BB%98/">网络空间测绘</a>
+                    
+                  </div>
+                
+              </div>
+              
+                <p class="note note-warning">
+                  
+                    本博客所有文章除特别声明外，均采用 <a target="_blank" href="https://creativecommons.org/licenses/by-sa/4.0/deed.zh" rel="nofollow noopener noopener">CC BY-SA 4.0 协议</a> ，转载请注明出处！
+                  
+                </p>
+              
+              
+                <div class="post-prevnext">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2024/01/18/burpsuite-java-extension-code-env/">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">Burpsuite Java插件开发 - 基础篇</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2023/09/27/burpsuite-extension-menu-level/">
+                        <span class="hidden-mobile">Burpsuite 插件开发 - 修改右键菜单层级</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+              <!-- Comments -->
+              <article class="comments" id="comments" lazyload>
+                
+                  
+                
+                
+  <script type="text/javascript">
+    Fluid.utils.loadComments('#comments', function() {
+      var light = 'github-light';
+      var dark = 'github-dark';
+      var schema = document.documentElement.getAttribute('data-user-color-scheme');
+      if (schema === 'dark') {
+        schema = dark;
+      } else {
+        schema = light;
+      }
+      window.UtterancesThemeLight = light;
+      window.UtterancesThemeDark = dark;
+      var s = document.createElement('script');
+      s.setAttribute('src', 'https://utteranc.es/client.js');
+      s.setAttribute('repo', 'Ovi3/Ovi3.github.io');
+      s.setAttribute('issue-term', 'title');
+      
+      s.setAttribute('label', 'utterances');
+      
+      s.setAttribute('theme', schema);
+      s.setAttribute('crossorigin', 'anonymous');
+      document.getElementById('comments').appendChild(s);
+    })
+  </script>
+  <noscript>Please enable JavaScript to view the comments</noscript>
+
+
+              </article>
+            
+          </article>
+        </div>
+      </div>
+    </div>
+    
+      <div class="d-none d-lg-block col-lg-2 toc-container" id="toc-ctn">
+        <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+      </div>
+    
+  </div>
+</div>
+
+<!-- Custom -->
+
+
+    
+
+    
+      <a id="scroll-top-button" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v"
+                 for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    
+  </main>
+
+  <footer class="text-center mt-5 py-3">
+  <div class="footer-content">
+     <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+  </div>
+  
+  <div class="statistics">
+    
+    
+
+    
+      
+        <!-- 不蒜子统计PV -->
+        <span id="busuanzi_container_site_pv" style="display: none">
+            总访问量 
+            <span id="busuanzi_value_site_pv"></span>
+             次
+          </span>
+      
+      
+        <!-- 不蒜子统计UV -->
+        <span id="busuanzi_container_site_uv" style="display: none">
+            总访客数 
+            <span id="busuanzi_value_site_uv"></span>
+             人
+          </span>
+      
+    
+  </div>
+
+
+  
+
+  
+</footer>
+
+
+  <!-- SCRIPTS -->
+  
+  <script  src="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://cdn.jsdelivr.net/npm/nprogress@0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js" ></script>
+<script  src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+<!-- Plugins -->
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+  
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/tocbot@4.12.3/dist/tocbot.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/@fancyapps/fancybox@3.5.7/dist/jquery.fancybox.min.js" ></script>
+
+
+
+  <script  src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js" ></script>
+
+
+
+  <script defer src="https://cdn.jsdelivr.net/npm/clipboard@2.0.8/dist/clipboard.min.js" ></script>
+
+
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+<script>
+
+function observeAndDisplay(sourceId, targetId) {
+  if (document.getElementById(sourceId)) {
+    new MutationObserver(m => {
+      m.forEach(m => {
+        if (m.target.textContent.trim() !== '') {
+          document.getElementById(targetId).style.display = 'inline';
+        }
+      });
+    })
+      .observe(
+        document.getElementById(sourceId),
+        { childList: true, characterData: true, subtree: true }
+      );
+  }
+
+}
+
+observeAndDisplay('busuanzi_value_page_pv', 'busuanzi_container_page_pv');
+observeAndDisplay('busuanzi_value_site_pv', 'busuanzi_container_site_pv');
+observeAndDisplay('busuanzi_value_site_uv', 'busuanzi_container_site_uv');
+
+
+</script>
+
+  <script defer src="https://cn.vercount.one/js?i=/busuanzi.pure.mini.js" ></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- 主题的启动项 保持在最底部 -->
+<script  src="/js/boot.js" ></script>
+
+
+</body>
+</html>

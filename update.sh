@@ -1,50 +1,39 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-uNames=$(uname -s)
-echo "OS: $uNames"
-osName=${uNames:0:4} # Linux 需要用 bash update.sh 否则会报错: ./update.sh: 5: Bad substitution
-if [ "$osName" == "Darw" ] # Darwin
-then
-	# echo "Mac OS X"
+cd ./repos/"${1}"/ || exit 1
 
-    ./apt-ftparchive packages ./debfiles/ > ./Packages; # macOS 修改版的会报错，但是也可以执行
-    sed -i '' -e 's/.\/debfiles\/\//.\/debfiles\//g' ./Packages; # 去掉上面程序多余的出来的 /
-    # sed -i '' -e 's/.\/debfiles\//.\/iosre\/debfiles\//g' ./Packages;
-    # perl -e 'print"HelloWorld\n"' # perl test
-    bzip2 -c9k ./Packages > ./Packages.bz2;
-    printf "Origin: ZFYy1x's Repo\n\
-    Label: ZFYy1x\n\
-    Suite: stable\n\
-    Version: 1.0\n\
-    Codename: ZFYy1x\n\
-    Architecture: iphoneos-arm\n\
-    Components: master\n\
-    Description: ZFYy1x's Tweaks\n\
-    MD5Sum:\n \
-    "$(cat ./Packages | md5 | cut -d ' ' -f 1)" \
-    "$(stat -f "%z" ./Packages)" Packages\n \
-    "$(cat ./Packages.bz2 | md5 | cut -d ' ' -f 1)" \
-    "$(stat -f "%z" ./Packages.bz2)" Packages.bz2\n" |\
-    sed "s/    //g"\
-    > Release;
-    ls -t ./debfiles/ | \
-    grep '.deb' | \
-    perl -e 'use JSON; @in=grep(s/\n$//, <>); $count=0; foreach $fileNow (@in) { $fileNow = "./debfiles/$fileNow"; $size = -s $fileNow; $debInfo = `dpkg -f $fileNow`; $section = `echo "$debInfo" | grep "Section: " | cut -c 10- | tr -d "\n\r"`; $name= `echo "$debInfo" | grep "Name: " | cut -c 7- | tr -d "\n\r"`; $version= `echo "$debInfo" | grep "Version: " | cut -c 10- | tr -d "\n\r"`; $package= `echo "$debInfo" | grep "Package: " | cut -c 10- | tr -d "\n\r"`; $time= `date -r $fileNow +%s | tr -d "\n\r"`; @in[$count] = {section=>$section, package=>$package, version=>$version, size=>$size+0, time=>$time+0, name=>$name}; $count++; } print encode_json(\@in)."\n";' > all.packages;
-elif [ "$osName" == "Linu" ] # Linux
-then
-	# echo "GNU/Linux"
-
-    apt-ftparchive packages ./debfiles/ > ./Packages;
-    #sed -i -e '/^SHA/d' ./Packages;
-    # sed -i -e 's/.\/debfiles\//.\/iosre\/debfiles\//g' ./Packages
-    bzip2 -c9k ./Packages > ./Packages.bz2;
-    printf "Origin: ZFYy1x's Repo\nLabel: ZFYy1x\nSuite: stable\nVersion: 1.0\nCodename: ZFYy1x\nArchitecture: iphoneos-arm\nComponents: main\nDescription: ZFYy1x's Tweaks\nMD5Sum:\n "$(cat ./Packages | md5sum | cut -d ' ' -f 1)" "$(stat ./Packages --printf="%s")" Packages\n "$(cat ./Packages.bz2 | md5sum | cut -d ' ' -f 1)" "$(stat ./Packages.bz2 --printf="%s")" Packages.bz2\n" >Release;
-    ls ./debfiles/ -t | grep '.deb' | perl -e 'use JSON; @in=grep(s/\n$//, <>); $count=0; foreach $fileNow (@in) { $fileNow = "./debfiles/$fileNow"; $size = -s $fileNow; $debInfo = `dpkg -f $fileNow`; $section = `echo "$debInfo" | grep "Section: " | cut -c 10- | tr -d "\n\r"`; $name= `echo "$debInfo" | grep "Name: " | cut -c 7- | tr -d "\n\r"`; $version= `echo "$debInfo" | grep "Version: " | cut -c 10- | tr -d "\n\r"`; $package= `echo "$debInfo" | grep "Package: " | cut -c 10- | tr -d "\n\r"`; $time= `date -r $fileNow +%s | tr -d "\n\r"`; @in[$count] = {section=>$section, package=>$package, version=>$version, size=>$size+0, time=>$time+0, name=>$name}; $count++; } print encode_json(\@in)."\n";' > all.packages;
-elif [ "$osName" == "MING" ] # MINGW, windows, git-bash
-then 
-	echo "Windows, git-bash"
-else
-	echo "unknown os"
+arch="arm"
+if [ "${1}" = "roothide" ]; then
+  arch="${arch}64e"
 fi
 
-exit 0;
+rm -v Packages* InRelease
+
+apt-ftparchive packages ./debs > Packages
+bzip2 -c9 Packages > Packages.bz2
+xz -c9 Packages > Packages.xz
+xz -5fkev --format=lzma Packages > Packages.lzma
+lz4 -c9 Packages > Packages.lz4
+gzip -c9 Packages > Packages.gz
+zstd -c19 Packages > Packages.zst
+
+apt-ftparchive contents ./debs > Contents-iphoneos-"${arch}"
+bzip2 -c9 Contents-iphoneos-"${arch}" > Contents-iphoneos-"${arch}".bz2
+xz -c9 Contents-iphoneos-"${arch}" > Contents-iphoneos-"${arch}".xz
+xz -5fkev --format=lzma Contents-iphoneos-"${arch}" > Contents-iphoneos-"${arch}".lzma
+lz4 -c9 Contents-iphoneos-"${arch}" > Contents-iphoneos-"${arch}".lz4
+gzip -c9 Contents-iphoneos-"${arch}" > Contents-iphoneos-"${arch}".gz
+zstd -c19 Contents-iphoneos-"${arch}" > Contents-iphoneos-"${arch}".zst
+
+if [ "${1}" = "my" ]; then
+  apt-ftparchive release -c ../config/my.conf . > Release
+elif [ "${1}" = "roothide" ]; then
+  apt-ftparchive release -c ../config/roothide.conf . > Release
+else
+  apt-ftparchive release -c ../config/iphoneos-arm64.conf . > Release
+fi
+
+echo "${2}" | gpg --batch --yes --pinentry-mode=loopback --passphrase-fd 0 -abs -u 896CC9E708C847210A2293F2997233590E26A3A2 -o Release.gpg Release
+echo "${2}" | gpg --batch --yes --pinentry-mode=loopback --passphrase-fd 0 --clearsign -u 896CC9E708C847210A2293F2997233590E26A3A2 -o InRelease Release
+
+cd -

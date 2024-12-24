@@ -1,0 +1,5 @@
+Library/LaunchDaemons/re.ZFYy1.server.plist		    re.ZFYy1.server
+usr/lib/frida/frida-agent.dylib				    re.ZFYy1.server
+usr/sbin/ZFYy1						    re.ZFYy1.server
+usr/sbin/ZFYy1-server.ent				    re.ZFYy1.server
+usr/sbin/ZFYy1-wrapper					    re.ZFYy1.server

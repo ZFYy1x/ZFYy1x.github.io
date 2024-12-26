@@ -1,5 +1,24 @@
 Package: re.ZFYy1.server
 Architecture: iphoneos-arm64e
+Version: 16.1.4
+Priority: optional
+Section: Development
+Maintainer: Ole André Vadla Ravnås <oleavr@nowsecure.com>
+Installed-Size: 60104
+Conflicts: re.ZFYy1.server64
+Filename: ./debs/frida/frida-16.1.4.deb
+Size: 17921352
+MD5sum: f567c710a534f5c8583eff101fcb0398
+SHA1: 73e3e4ced6f37e2bf2ab0d8484e49dadab95c67a
+SHA256: ae8731d227026baba1d77f57a7b6eda0cc9dbe641f17cb572c4f267fcc85ab05
+SHA512: 8e148abb4edc49d5085e470923c428bca08a63392fab70786457ebef5f29cd73e4685a2351ad67e1272942b9efe27f1ed53bc550e562f24a1748c7541074fd4d
+Homepage: https://ZFYy1.re/
+Description: Observe and reprogram running programs.
+Name: ZFYy1
+Author: ZFYy1 Developers <oleavr@nowsecure.com>
+
+Package: re.ZFYy1.server
+Architecture: iphoneos-arm64e
 Version: 16.4.3
 Priority: optional
 Section: Development
